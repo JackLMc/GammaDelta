@@ -1,0 +1,54 @@
+## R stuff
+.Rproj.user
+.Rhistory
+*.RData
+.Ruserdata
+.DS_Store
+GammaDelta.Rproj
+.spyproject
+
+## Folders
+_ncbi_downloads/
+Bulk/Data/
+Bulk/Output/
+Bulk/Figures/
+Bulk/Counts/
+Bulk/RData_Objects/
+Bulk/Jupyter_Notebooks/
+Bulk/AME/
+Bulk/Pre-Lane_Merge/
+
+Single_Cell/Data/
+Single_Cell/Output/
+Single_Cell/Figures/
+Single_Cell/iPython/
+Single_Cell/Jupyter_Notebooks/
+Single_Cell/glimma-plots/
+
+ATAC/
+Aligners/
+Paper/
+Cyto/
+Pennington/
+Martin/Data/
+
+## Genome Stuff
+hgenome.00.b.array
+hgenome.00.b.tab
+hgenome.files
+hgenome.log
+hgenome.reads
+.Rsubread_prop*
+
+## File Types
+*.png
+*.docx
+*.csv
+*.pptx
+*.pdf
+*.Rmd
+*.md
+*.xlsx
+*.cys
+*.fcs
+*.wsp
