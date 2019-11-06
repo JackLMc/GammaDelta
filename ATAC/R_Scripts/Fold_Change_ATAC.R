@@ -114,12 +114,12 @@ Vd1_ordered <- Vd1_gene[order(Vd1_gene$FoldChange, decreasing = T),]
 Cd8_ordered <- Cd8_gene[order(Cd8_gene$FoldChange, decreasing = T),]
 
 ## Top guys
-Top_Vd1 <- head(Vd1_ordered, 1000)$Gene.Name %>% droplevels()
+Top_Vd1 <- head(Vd1_ordered, 5000)$Gene.Name %>% droplevels()
 
-Top_Cd8 <- head(Cd8_ordered, 1000)$Gene.Name %>% droplevels()
+Top_Cd8 <- head(Cd8_ordered, 5000)$Gene.Name %>% droplevels()
 
-shared_top <- Top_Vd1[Top_Vd1 %in% Top_Cd8]
-shared_top[grepl("TCF7", shared_top)] %>% droplevels()
+shared_top <- Top_Vd1[Top_Vd1 %in% Top_Cd8] 
+shared_top[grepl("CD27", shared_top)] %>% droplevels()
 
 
 droplevels(subset(Vd1_gene, Gene.Name == "TCF7"))
