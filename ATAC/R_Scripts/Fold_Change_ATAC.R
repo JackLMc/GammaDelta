@@ -89,6 +89,49 @@ length(these)
 
 
 
+
+## Organising by the most foldchanged ones
+head(LFC)
+z <- y[, colnames(y) %in% c("Merged_Peak_ID", "Gene.Name")]
+
+these <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "CD8.EMRA_CD8.NAIVE", "VD1.Eff_VD1.Naive")]
+
+
+Cd8 <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "CD8.EMRA_CD8.NAIVE")]
+Vd1 <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "VD1.Eff_VD1.Naive")]
+
+Vd1$FoldChange <- abs(Vd1$VD1.Eff_VD1.Naive)
+Cd8$FoldChange <- abs(Cd8$CD8.EMRA_CD8.NAIVE)
+
+
+
+
+Vd1_gene <- merge(Vd1, z, by = "Merged_Peak_ID")
+Cd8_gene <- merge(Cd8, z, by = "Merged_Peak_ID")
+
+
+Vd1_ordered <- Vd1_gene[order(Vd1_gene$FoldChange, decreasing = T),]
+Cd8_ordered <- Cd8_gene[order(Cd8_gene$FoldChange, decreasing = T),]
+
+## Top guys
+Top_Vd1 <- head(Vd1_ordered, 1000)$Gene.Name %>% droplevels()
+
+Top_Cd8 <- head(Cd8_ordered, 1000)$Gene.Name %>% droplevels()
+
+shared_top <- Top_Vd1[Top_Vd1 %in% Top_Cd8]
+shared_top[grepl("TCF7", shared_top)] %>% droplevels()
+
+
+droplevels(subset(Vd1_gene, Gene.Name == "TCF7"))
+
+# Bottom genes (fold change, to show in Supplementary?)
+supp_Vd1 <- tail(Vd1_ordered, 50)$Gene.Name %>% droplevels()
+
+supp_Cd8 <- tail(Cd8_ordered, 50)$Gene.Name %>% droplevels()
+
+supp_Vd1[supp_Vd1 %in% supp_Cd8]
+
+
 # FIND WHERE THESE PEAKS LIE...
 
 help <- merge(LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "CD8.EMRA_CD8.NAIVE", "VD1.Eff_VD1.Naive")], z, by = "Merged_Peak_ID")
