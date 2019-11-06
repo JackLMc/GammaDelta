@@ -25,7 +25,9 @@ Single_Cell/iPython/
 Single_Cell/Jupyter_Notebooks/
 Single_Cell/glimma-plots/
 
-ATAC/
+ATAC/Data/
+ATAC/Figures/
+
 Aligners/
 Paper/
 Cyto/
@@ -53,3 +55,6 @@ hgenome.reads
 *.fcs
 *.wsp
 *.gmt
+*.Rsubread*
+*.xml
+*.bed.gz
