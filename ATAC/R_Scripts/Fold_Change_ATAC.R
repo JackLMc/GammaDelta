@@ -125,9 +125,9 @@ shared_top[grepl("CD27", shared_top)] %>% droplevels()
 droplevels(subset(Vd1_gene, Gene.Name == "TCF7"))
 
 # Bottom genes (fold change, to show in Supplementary?)
-supp_Vd1 <- tail(Vd1_ordered, 50)$Gene.Name %>% droplevels()
+supp_Vd1 <- tail(Vd1_ordered, 100)$Gene.Name %>% droplevels()
 
-supp_Cd8 <- tail(Cd8_ordered, 50)$Gene.Name %>% droplevels()
+supp_Cd8 <- tail(Cd8_ordered, 800)$Gene.Name %>% droplevels()
 
 supp_Vd1[supp_Vd1 %in% supp_Cd8]
 
