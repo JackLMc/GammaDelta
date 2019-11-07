@@ -151,10 +151,26 @@ test2 = ggplot_build(test)
 
 fill_colours = names(sort(table(test2$data[[1]]["colour"]), decreasing = T))[2:14]
 cols = append(fill_colours, c("#D3D3D3"))
+# install.packages("randomcoloR")
+set.seed(1)
+library(randomcoloR)
+n <- 14
+palette <- distinctColorPalette(n)
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Single_Cell/Figures/Gamma-Delta/Clonality.pdf")
-PCAPlot(gd.data_noBatch, group.by = "clonotype", do.return = T, cols.use = cols)
+# display_col("#D5D3D9")
+# display_cols("#999999")
+palette <- gsub("#DAD65F", "#999999", palette)
+palette <- gsub("#D5D3D9", "#DAD65F", palette)
+
+
+pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Single_Cell/Figures/Gamma-Delta/Clonality.pdf")
+PCAPlot(gd.data_noBatch, group.by = "clonotype", do.return = T, cols.use = palette) +
+  theme(legend.title = element_blank(), legend.position = "top")
 dev.off()
+
+theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(legend.title = element_blank(), legend.position = "top")
 
 ### Colour only the biggest clones
 PC_coords <- as.data.frame(GetDimReduction(object = gd.data_noBatch, reduction.type = "pca", 
