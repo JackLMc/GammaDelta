@@ -64,7 +64,7 @@ col.cell1 <- c("#56B4E9", "#E69F00", "#009E73", "#999999")[v1$targets$group]
 #   print(j)
 #   working <- droplevels(subset(Carrie, GENESET == j))
 #   i <- which(v1$genes$SYMBOL %in% working$SYMBOL)
-#   setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Heatmaps/V4")
+#   setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Heatmaps/V4")
 #   filen <- paste0(j, ".pdf")
 #   pdf(filename = filen, height = 8, width = 8)
 # heatmap.2(v1$E[i,], scale = "row",
@@ -76,7 +76,7 @@ col.cell1 <- c("#56B4E9", "#E69F00", "#009E73", "#999999")[v1$targets$group]
 #           main = as.character(levels(working$GENESET)),
 #           hclustfun = hclustAvg)
 # dev.off()
-#   setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk")
+#   setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk")
 #   c <- c + 1
 # }
 
@@ -111,7 +111,7 @@ for(j in levels(Carrie$GENESET)){
             main = as.character(levels(working$GENESET)),
             ColSideColors = col.cell)
   dev.off()
-  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk")
+  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk")
   c <- c + 1
 }
 
@@ -152,7 +152,7 @@ for(j in levels(Carrie$GENESET)){
             main = as.character(levels(working$GENESET)),
             ColSideColors = col.cell1)
   dev.off()
-  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk")
+  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk")
   c <- c + 1
 }
 

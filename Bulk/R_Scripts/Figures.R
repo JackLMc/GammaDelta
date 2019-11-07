@@ -140,9 +140,9 @@ tryCatch(expr = { library("RCurl")},
 library(qusage)
 
 ## Read in the Genesets
-All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
-KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
-GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
+All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
+KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
+GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
 
 
 ## Filter genesets that appear in only KEGG and GO databases (6103 genesets)
@@ -237,9 +237,9 @@ results_filename <- file.path(getwd(),  camera_results_file)
 current_network_name <- paste(cur_model_name, pvalue_threshold, qvalue_threshold, sep = "_")
 
 
-results_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Cyto/camera_results_generic_CD8.txt"
-expression_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Cyto/expression_file.txt"
-generic_gmt_file <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Cyto/msigdb.v6.2.entrez.gmt"
+results_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Cyto/camera_results_generic_CD8.txt"
+expression_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Cyto/expression_file.txt"
+generic_gmt_file <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Cyto/msigdb.v6.2.entrez.gmt"
 em_command = paste('enrichmentmap build analysisType=generic',
                    "gmtFile=", generic_gmt_file,
                    "pvalue=", pvalue_threshold,
@@ -457,19 +457,19 @@ all_gen <- as.vector(matrix(c(int, CD8_genes), nrow = 2, byrow = T))
 allgen <- all_gen[!duplicated(all_gen)]
 
 # Venn Diagrams - S2a
-png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/v2/DE_genes_EffectorvsNaive.png",
+png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/v2/DE_genes_EffectorvsNaive.png",
     width = 300, height = 300, units = "mm", res = 300)
 vennDiagram(dt[, c(1,8)], include = "both", mar = c(0,0,0,0))
 title(main = "Differentially expressed Genes", line = -6)
 dev.off()
 
-png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/v2/Up_DE_genes_EffectorvsNaive.png",
+png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/v2/Up_DE_genes_EffectorvsNaive.png",
     width = 300, height = 300, units = "mm", res = 300)
 vennDiagram(dt[, c(1,8)], include = "up", mar = c(0,0,0,0))
 title(main = "Upregulated", line = -6)
 dev.off()
 
-png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/v2/Down_DE_genes_EffectorvsNaive.png",
+png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/v2/Down_DE_genes_EffectorvsNaive.png",
     width = 300, height = 300, units = "mm", res = 300)
 vennDiagram(dt[, c(1,8)],  include = "down", mar = c(0,0,0,0))
 title(main = "Downregulated", line = -6)

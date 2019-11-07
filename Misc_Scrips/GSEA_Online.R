@@ -1,7 +1,7 @@
 load("Bulk/Final_edgeR.RData")
 
 ### Write out
-output_dir <- "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/4_Gamma_Delta/GSEA"
+output_dir <- "/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/GammaDelta/GSEA"
 
 brca_hd_tep_tmm_normalized_expression_df <- x$counts
 

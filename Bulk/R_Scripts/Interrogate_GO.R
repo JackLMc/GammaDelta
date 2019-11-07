@@ -1,9 +1,9 @@
 library(qusage)
 
 ## Read in the Genesets
-All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
-KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
-GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
+All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
+KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
+GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
 
 
 ## Filter genesets that appear in only KEGG and GO databases (6103 genesets)

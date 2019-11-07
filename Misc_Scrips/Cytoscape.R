@@ -53,7 +53,7 @@ tryCatch(expr = { library("RCurl")},
 # rx <- gregexpr("(?<=<a href=\")(.*.GOBP_AllPathways_no_GO_iea.*.)(.gmt)(?=\">)",
 #               contents, perl = T)
 # gmt_file <- unlist(regmatches(contents, rx))
-# working_dir <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/"
+# working_dir <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/"
 # 
 # dest_gmt_file <- file.path(working_dir, paste("Supplementary_Table3_", gmt_file, sep="") )
 # 
@@ -65,11 +65,11 @@ tryCatch(expr = { library("RCurl")},
 
 # Geneset enrichment
 ## GO_genesets
-# load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/GO_genesets.rdata")
+# load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/GO_genesets.rdata")
 library(qusage)
-All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
-KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
-GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
+All_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/msigdb.v6.2.entrez.gmt")
+KEGG_gmt <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c2.cp.kegg.v6.2.entrez.gmt")
+GO_terms <- read.gmt("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt")
 
 
 # Filter 
@@ -168,9 +168,9 @@ results_filename <- file.path(getwd(),  camera_results_file)
 current_network_name <- paste(cur_model_name, pvalue_threshold, qvalue_threshold, sep = "_")
 
 
-results_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/camera_results_generic_em.txt"
-expression_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/expression_file.txt"
-generic_gmt_file <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt"
+results_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/camera_results_generic_em.txt"
+expression_filename <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/expression_file.txt"
+generic_gmt_file <- "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Output/Cyto/c5.all.v6.2.entrez.gmt"
 em_command = paste('enrichmentmap build analysisType="generic"',
                    'gmtFile=', generic_gmt_file,
                    'pvalue=', pvalue_threshold,

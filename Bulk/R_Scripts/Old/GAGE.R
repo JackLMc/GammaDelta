@@ -39,9 +39,9 @@ library(pathview)
 # 
 # kegg_arab <- kegg.gsets("hsa")
 # kegg_human <- kegg_arab$kg.sets[kegg_arab$sigmet.idx]
-# save(kegg_human, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/kegg_human.RData")
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/kegg_human.rdata")
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/x.rdata")
+# save(kegg_human, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/kegg_human.RData")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/kegg_human.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/x.rdata")
 
 ## Make count database
 rnaseq_counts <- as.data.frame(x$counts)
@@ -130,7 +130,7 @@ head(fc.kegg.p$greater[,1:5], 4)
 wt_hy_sig_kegg <-sigGeneSet(fc.kegg.p, outname = "wt_hy.kegg")
 
 
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Geneset_Enrichment")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Geneset_Enrichment")
 # pv.out.list <- sapply(combine_ids[1:3], function(pid) pathview(
 #   gene.data =  exp.fc, pathway.id = pid,
 #   species = "hsa", out.suffix = "27LO_compared_to_27HI",

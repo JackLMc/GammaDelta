@@ -40,8 +40,8 @@ source("Bulk/R_Scripts/Functions.R")
 
 ## Using edgeR ##
 library(edgeR)
-files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Counts", pattern = ".txt$")
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Counts")
+files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts", pattern = ".txt$")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts")
 
 #### Create the DGE List object used to investigate
 x <- readDGE(files, columns = c(1, 3))
@@ -128,7 +128,7 @@ d2 <- estimateGLMTagwiseDisp(d2, design.mat)
 plotBCV(d2)
 
 save.image("/Final_edgeR.RData")
-load("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Final_edgeR.RData")
+load("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Final_edgeR.RData")
 
 #### Investigate similarity of cell populations
 library(ggdendro) 
@@ -186,7 +186,7 @@ gp3$widths[2:5] <- as.list(maxWidth)
 
 library(gridExtra)
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/hier_clust_VD2.pdf")
+pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/hier_clust_VD2.pdf")
 grid.arrange(gp1, gp3, ncol = 1, heights = c(4/5, 1/5, 1/5))
 dev.off()
 
@@ -196,7 +196,7 @@ col.cell1 <- c("#56B4E9", "#E69F00", "#009E73", "#999999")[No_VD2]
 data.frame(No_VD2, col.cell1)
 DFa <- DF[, !grepl( "VD2" , names(DF) )]
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Figure2A.pdf")
+pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Figure2A.pdf")
 plotMDS(DF, pch = 16, cex = 1.2, col = cbcols)
 legend("topleft",
        fill = c("#56B4E9", "#E69F00",

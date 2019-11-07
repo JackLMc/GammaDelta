@@ -79,7 +79,7 @@ get_sorbam <- function(foldertobam){
   {list.files(x, pattern = ".sor.bam$", full.names = T)
   })
   bam.files <- unlist(filelist1)
-  setwd("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/4_Gamma_Delta/Bulk")
+  setwd("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/GammaDelta/Bulk")
   return(bam.files)
 }
 
@@ -106,7 +106,7 @@ writeCsvD <- function(df){
 # Write a csv for non raw data
 writeCsvO <- function(df){
   fn <- deparse(substitute(df))
-  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/4_Gamma_Delta/Bulk/Output/DEgenes/",fn,".csv"), row.names = F)}
+  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/GammaDelta/Bulk/Output/DEgenes/",fn,".csv"), row.names = F)}
 
 writeCsvA <- function(df){
   fn <- deparse(substitute(df))
@@ -114,11 +114,11 @@ writeCsvA <- function(df){
 
 writeCsvCount <- function(df){
   fn <- deparse(substitute(df))
-  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/4_Gamma_Delta/Bulk/Counts/",fn,".csv"), row.names = F)}
+  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/GammaDelta/Bulk/Counts/",fn,".csv"), row.names = F)}
 
 writeCsvGS <- function(df){
   fn <- deparse(substitute(df))
-  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/4_Gamma_Delta/Bulk/Output/GSEA/",fn,".csv"), row.names = F)}
+  write.csv(df, file = paste0("/Users/jlm650/OneDrive/UoB/PhD/1st_Year/Projects/GammaDelta/Bulk/Output/GSEA/",fn,".csv"), row.names = F)}
 
 # Rename column names
 renamecolumn <- function(df, oldname, newname){

@@ -67,8 +67,8 @@ for(i in levels(Counts3$ID)){
 LoS <- lapply(listofsamp, function(x) x[!(names(x) %in% c("ID"))])
 
 # write Csvs for each member of the list
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Counts")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts")
 for(i in names(LoS)){
   write.table(LoS[[i]], paste0(i,".txt"), sep = "\t", row.names = F)
 }
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk")

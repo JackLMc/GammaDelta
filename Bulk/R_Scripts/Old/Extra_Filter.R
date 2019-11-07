@@ -11,8 +11,8 @@ source("Functions.R")
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("edgeR", dependencies = T)
 library(edgeR)
-files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Counts", pattern = ".txt$")
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Counts")
+files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts", pattern = ".txt$")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts")
 
 # Replenish "x"
 x <- readDGE(files, columns = c(1,3))
@@ -100,7 +100,7 @@ dim(x)
 x <- calcNormFactors(x, method = "TMM")
 x$samples$norm.factors
 
-# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/x.RData")
+# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/x.RData")
 
 ## Showing theoretical effect of normalisation
 # x2 <- x
@@ -140,7 +140,7 @@ library(Glimma)
 #           groups = x$samples[,c(2,5)], launch = F)
 
 # Differential gene expression (START FROM HERE)
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/x.RData")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/x.RData")
 design <- model.matrix(~0 + group + lane)
 colnames(design) <- gsub("group", "", colnames(design))
 
@@ -377,7 +377,7 @@ g <- g + theme(legend.direction = 'horizontal',
 g <- g + ggtitle("PCA of shared DE genes (Naive vs Effector)")
 
 ggsave("PCA of shared DE genes (Naive vs Effector).png" , plot = g, device = "png",
-       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures",
+       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures",
        height = 6, width = 6, units = 'in', dpi = 600)
 
 # How many PC's are important?
@@ -477,7 +477,7 @@ for(i in levels(Normality$uniq)){
     stat_qq(aes(sample = ComponentScore))
   filen <- paste0(i, ".png")
   ggsave(filen, plot = temp_plot, device = "tiff",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PCA/Normality_PC",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PCA/Normality_PC",
          height=5, width=5, units='in', dpi=600)
 }
 
@@ -490,7 +490,7 @@ for(i in levels(PC_TCGA2$Component)){
   temp_plot <- ggComponent(Chosen)
   filen <- paste0(i, ".png")
   ggsave(filen, plot = temp_plot, device = "png",
-         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PCA/Compare_PC",
+         path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PCA/Compare_PC",
          height=6, width=7, units='in', dpi=600)
 }
 
@@ -774,7 +774,7 @@ heatmap.2(v1$E[i,], scale = "row",
 
 # Geneset Enrichment Analysis
 ## GO_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/GO_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/GO_genesets.rdata")
 idx <- ids2indices(Hs.c5, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 5)
@@ -782,7 +782,7 @@ barcodeplot(efit$t[, 1], index = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_UP ,
             index2 = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_DN, main = "NaiveVsCD8")
 
 # Immunological Signatures
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Immunological_Signatures.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Immunological_Signatures.rdata")
 idx <- ids2indices(Hs.c7, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 10)
@@ -794,7 +794,7 @@ barcodeplot(efit$t[, 1], index = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_UP ,
             index2 = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_DN, main = "NaiveVsCD8")
 
 # Hallmark_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Hallmark_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Hallmark_genesets.rdata")
 idx <- ids2indices(Hs.H, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 5)

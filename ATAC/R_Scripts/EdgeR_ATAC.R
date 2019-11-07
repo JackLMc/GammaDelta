@@ -33,8 +33,8 @@ library(Rsubread)
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("edgeR", dependencies = T)
 # library(edgeR)
-# files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/ATAC/Data/", pattern = ".txt$")
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/ATAC/Data/")
+# files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/ATAC/Data/", pattern = ".txt$")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/ATAC/Data/")
 
 # # Replenish "x"
 # x <- read.delim(files)
@@ -59,7 +59,7 @@ for(i in 1:length(peak_files)){
   openRegionPeaks <- peak_files[i]
   annot_peaks <- annotatePeak(openRegionPeaks, TxDb = TxDb.Hsapiens.UCSC.hg19.knownGene)
   peak_list[[openRegionPeaks]] <- annot_peaks
-  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/ATAC/Figures/")
+  setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/ATAC/Figures/")
   pdf(paste0(openRegionPeaks, ".pdf"))
   plotAnnoPie(annot_peaks)
   dev.off()

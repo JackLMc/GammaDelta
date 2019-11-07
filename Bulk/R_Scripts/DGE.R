@@ -58,7 +58,7 @@ HV_lpcm1 <- merge(HV_lpcm, x$genes, by = "ENTREZID")
 highly_variable_lcpm_sym <- within(HV_lpcm1, rm(TXCHROM, ENTREZID))
 
 # Plot the heatmap
-# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/Heatmap_top150_variable_genes.png",
+# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/Heatmap_top150_variable_genes.png",
 #     width = 300, height = 350, units = "mm", res = 300)
 distCor <- function(x) as.dist(1-cor(t(x)))
 hclustAvg <- function(x) hclust(x, method = "average")
@@ -231,7 +231,7 @@ g <- g + theme(legend.key.height = unit(.6, "line")) +
 g <- g + guides(colour = guide_legend(override.aes = list(size = 3, linetype = 0, pch = 15)))
 
 ggsave("PCA of shared DE genes (Naive vs Effector).pdf" , plot = g, device = "pdf",
-       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures", scale = .5)
+       path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures", scale = .5)
 
 
 # How many PC's are important?
@@ -290,14 +290,14 @@ top100PC1 <- PC1_co[, c("gene")]
 col.cell1 <- c("#56B4E9", "#E69F00", "#009E73", "#999999")[v1$targets$group]
 data.frame(v1$targets$group, col.cell1)
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PC_Heatmap_top100_contrib_genes_horiz.pdf")
+pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PC_Heatmap_top100_contrib_genes_horiz.pdf")
 heatmap.2(t(v1$E[top100PC1,]), scale = "column",labRow = FALSE, #v1$genes$SYMBOL[v1$genes$ENTREZID %in% top100PC1],
            labCol = v1$genes$SYMBOL[v1$genes$ENTREZID %in% top100PC1], #colnames(v1), #can also do labCol = groups
           col = mycol, trace = "none", density.info = "none", RowSideColors = col.cell1, key = F,
           margin = c(8,6), lhei = c(2,10))
 dev.off()
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PC_Heatmap_top100_contrib_genes_vert.pdf")
+pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PC_Heatmap_top100_contrib_genes_vert.pdf")
 heatmap.2(v1$E[top100PC1,], scale = "row", labRow = v1$genes$SYMBOL[v1$genes$ENTREZID %in% top100PC1],
           labCol = FALSE, #colnames(v1), #can also do labCol = groups
           col = mycol, trace = "none", density.info = "none", ColSideColors = col.cell1, key = F,
@@ -716,7 +716,7 @@ mycol <- colorpanel(1000,"blue","white","red")
 col.cell1 <- c("#56B4E9","#E69F00","#009E73","#999999")[v1$targets$group]
 data.frame(v1$targets$group, col.cell1)
 
-# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/Shared_top100_DEgenes.png",
+# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/Shared_top100_DEgenes.png",
 #     width = 300, height = 300, units = "mm", res = 300)
 heatmap.2(v1$E[i,], scale = "row",
           labRow = v1$genes$SYMBOL[i], labCol = group1, 
@@ -776,7 +776,7 @@ legend(x = 0.87, y = 1.05,
 CD27LO.vs.CD27HI.topgenes
 
 # Hallmark_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Hallmark_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Hallmark_genesets.rdata")
 idx <- ids2indices(Hs.H, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, "CD27LOvsCD27HI"])
 head(cam.CD27LO.vs.CD27HI, 5)
@@ -796,7 +796,7 @@ length(Hs.H[["HALLMARK_OXIDATIVE_PHOSPHORYLATION"]])
 
 
 # KEGG
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/kegg_human.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/kegg_human.rdata")
 
 ## Geneset enrichment
 idx <- ids2indices(kegg_human, id = rownames(v))
@@ -900,7 +900,7 @@ barcodeplot(efit$t[, 1], index = idx$`hsa04650 Natural killer cell mediated cyto
 
 #### Less Interesting Genesets ####
 ## GO_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/GO_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/GO_genesets.rdata")
 
 ## Remove genesets over or equal to 300 length and below 10 genes
 GO_sizes<- as.data.frame(lengths(Hs.c5)) %>% rownames_to_column(., var = "GO_pathway")
@@ -1143,7 +1143,7 @@ head(GO_GD)
 ggplot(GO_GD, aes(x = GO_Geneset, y = Directed_FDR)) + geom_point()
 
 # Immunological Signatures
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Immunological_Signatures.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Immunological_Signatures.rdata")
 idx <- ids2indices(Hs.c7, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 10)

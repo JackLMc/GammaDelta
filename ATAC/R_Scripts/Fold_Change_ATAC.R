@@ -29,8 +29,8 @@ library(Rsubread)
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("edgeR", dependencies = T)
 library(edgeR)
-files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/ATAC/Data/", pattern = ".txt$")
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/ATAC/Data/")
+files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/ATAC/Data/", pattern = ".txt$")
+setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/ATAC/Data/")
 
 # Replenish "x"
 y <- read.delim(files)
@@ -434,7 +434,7 @@ save.image(".ATAC.RData")
 ## Can't do anything lower down - NEED REPLICATES; no replicates = can't estimate relationship which is critical to the stats underlying this package.
 x <- estimateCommonDisp(x)
 x <- estimateTagwiseDisp(x)
-# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/x.RData")
+# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/x.RData")
 
 # ## Showing theoretical effect of normalisation
 # x2 <- x
@@ -527,7 +527,7 @@ distCor <- function(x) as.dist(1-cor(t(x)))
 hclustAvg <- function(x) hclust(x, method = "average")
 
 # Plot the heatmap
-# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/Heatmap_top150_variable_genes.png",
+# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/Heatmap_top150_variable_genes.png",
 #     width = 300, height = 350, units = "mm", res = 300)
 # heatmap.2(as.matrix(highly_variable_lcpm_sym[, names(highly_variable_lcpm_sym) != "SYMBOL"]), 
 #           col = mycol,
@@ -650,7 +650,7 @@ de.CD8 <- efit$genes$ENTREZID[CD8]
 
 
 ## Up, Down and Both
-# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/DE_genes_EffectorvsNaive.png",
+# png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/DE_genes_EffectorvsNaive.png",
 #     width = 450, height = 300, units = "mm", res = 300)
 # layout(matrix(c(1,1,2,3), 2, 2, byrow = F))
 # vennDiagram(dt[, c(1,8)], include = "both", mar = c(0,0,0,0))
@@ -724,7 +724,7 @@ library(ggbiplot)
 # g <- g + ggtitle("PCA of shared DE genes (Naive vs Effector)")
 # 
 # ggsave("PCA of shared DE genes (Naive vs Effector).png" , plot = g, device = "png",
-#        path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures",
+#        path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures",
 #        height = 6, width = 6, units = 'in', dpi = 600)
 
 # # How many PC's are important?
@@ -824,7 +824,7 @@ library(ggbiplot)
 #     stat_qq(aes(sample = ComponentScore))
 #   filen <- paste0(i, ".png")
 #   ggsave(filen, plot = temp_plot, device = "tiff",
-#          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PCA/Normality_PC",
+#          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PCA/Normality_PC",
 #          height=5, width=5, units='in', dpi=600)
 # }
 # 
@@ -837,7 +837,7 @@ library(ggbiplot)
 #   temp_plot <- ggComponent(Chosen)
 #   filen <- paste0(i, ".png")
 #   ggsave(filen, plot = temp_plot, device = "png",
-#          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/PCA/Compare_PC",
+#          path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/PCA/Compare_PC",
 #          height=6, width=7, units='in', dpi=600)
 # }
 # 
@@ -1119,7 +1119,7 @@ mycol <- colorpanel(1000,"blue","white","red")
 col.cell1 <- c("#999999","#56B4E9","#E69F00","#009E73")[v1$targets$group]
 data.frame(v1$targets$group, col.cell1)
 
-png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/Shared_top100_DEgenes.png",
+png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/Shared_top100_DEgenes.png",
     width = 300, height = 300, units = "mm", res = 300)
 heatmap.2(v1$E[i,], scale = "row",
           labRow = v1$genes$SYMBOL[i], labCol = group1, 
@@ -1183,14 +1183,14 @@ length(this)
 
 # Geneset Enrichment Analysis
 ## GO_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/GO_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/GO_genesets.rdata")
 idx <- ids2indices(Hs.c5, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 5)
 barcodeplot(efit$t[, 1], index = idx$GO_CELL_KILLING, main = "CD27LO vs CD27HI")
 
 # Immunological Signatures
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Immunological_Signatures.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Immunological_Signatures.rdata")
 idx <- ids2indices(Hs.c7, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 10)
@@ -1199,7 +1199,7 @@ barcodeplot(efit$t[, 1], index = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_UP ,
             index2 = idx$GSE26495_NAIVE_VS_PD1LOW_CD8_TCELL_DN, main = "NaiveVsCD8")
 
 # Hallmark_genesets
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/Hallmark_genesets.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/Hallmark_genesets.rdata")
 idx <- ids2indices(Hs.H, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, 1])
 head(cam.CD27LO.vs.CD27HI, 5)
@@ -1207,7 +1207,7 @@ head(cam.CD27LO.vs.CD27HI, 5)
 sig.CD27LO.vs.CD27HI <- droplevels(subset(cam.CD27LO.vs.CD27HI, PValue < 0.05))
 
 # KEGG
-load("~/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/RData_Objects/kegg_human.rdata")
+load("~/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/RData_Objects/kegg_human.rdata")
 idx <- ids2indices(kegg_human, id = rownames(v))
 cam.CD27LO.vs.CD27HI <- camera(v, idx, design, contrast = contr.matrix[, "CD27LOvsCD27HI"])
 head(cam.CD27LO.vs.CD27HI, 5)

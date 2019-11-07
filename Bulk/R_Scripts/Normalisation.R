@@ -89,7 +89,7 @@ library(Glimma)
 col.cell <- c("#999999","#56B4E9","#E69F00","#009E73","#CC79A7")[x$samples$group]
 data.frame(x$samples$group, col.cell)
 
-png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/4_Gamma_Delta/Bulk/Figures/Paper/PCA_of_all_genes.png", width = 150, height = 150, units = "mm", res = 300)
+png(filename = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Figures/Paper/PCA_of_all_genes.png", width = 150, height = 150, units = "mm", res = 300)
 plotMDS(lcpm, pch = 16, cex = 1.2, col = col.cell, top = 11999)
 legend("top",
        fill = c("#999999", "#56B4E9",
