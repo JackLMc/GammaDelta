@@ -52,68 +52,124 @@ x$samples$group <- as.factor(group)
 
 # Calculate counts per million, log counts per million (can also do RPKM [function rpkm()])
 x <- calcNormFactors(x, method = "TMM")
-cpm <- cpm(x)
-cpm1 <- cpm  + 1
 
-cpm2 <- cpm1 %>% as.data.frame() %>% rownames_to_column(., var = "Merged_Peak_ID")
+filter_the <- x$counts %>% as.data.frame()
 
-mat <- data.matrix(cpm1)
-combs <- combn(colnames(mat), 2)
+
+CD8 <- filter_the[, c("CD8.EMRA", "CD8.NAIVE")]
+VD1 <- filter_the[, c("VD1.Eff", "VD1.Naive")]
+
+CD8_above_10 <- droplevels(subset(CD8, CD8.EMRA > 10 & CD8.NAIVE > 10))
+VD1_above_10 <- droplevels(subset(VD1, VD1.Eff > 10 & VD1.Naive > 10))
+
+
+cpm_a <- cpm(CD8_above_10)
+cpm_a1 <- cpm_a  + 1
+
+cpm_b <- cpm(VD1_above_10)
+cpm_b1 <- cpm_b  + 1
+
+
+# cpm2 <- cpm_a1 %>% as.data.frame() %>% rownames_to_column(., var = "Merged_Peak_ID")
+
+mat_a <- data.matrix(cpm_a1)
+combs_a <- combn(colnames(mat_a), 2)
+
+mat_b <- data.matrix(cpm_b1)
+combs_b <- combn(colnames(mat_b), 2)
+
 
 lfc1 <- function(a, b) ((b-a)/a)
-logfoldchanges <- apply(combs, 2, function(col_names) lfc1(mat[, col_names[1]], mat[, col_names[2]]))
-dimnames(logfoldchanges)[[2]] <- apply(combs, 2, paste, collapse = '_')
-
-logfoldchanges <- logfoldchanges - 1
-logfoldchanges <- as.data.frame(logfoldchanges)
-LFC <- rownames_to_column(logfoldchanges, var = "Merged_Peak_ID")
-range(LFC$VD1.Eff_VD1.Naive)
-range(LFC$CD8.EMRA_CD8.NAIVE)
-
-head(logfoldchanges)
-
-VD1_FCs <- droplevels(subset(LFC, VD1.Eff_VD1.Naive <= 0.5 & VD1.Eff_VD1.Naive >= -0.5))$Merged_Peak_ID
-
-head(VD1_FCs)
-
-CD8_FCs <- droplevels(subset(LFC, CD8.EMRA_CD8.NAIVE <= 0.5 & CD8.EMRA_CD8.NAIVE >= -0.5))$Merged_Peak_ID
-
-these <- VD1_FCs[VD1_FCs %in% CD8_FCs]
-
-head(y)
-z <- y[, colnames(y) %in% c("Merged_Peak_ID", "Gene.Name")]
-head(z)
-
-z[z$Merged_Peak_ID %in% these, ]
-length(these)
 
 
+logfoldchanges_a <- apply(combs_a, 2, function(col_names) lfc1(mat_a[, col_names[1]], mat_a[, col_names[2]]))
+dimnames(logfoldchanges_a)[[2]] <- apply(combs_a, 2, paste, collapse = '_')
+
+logfoldchanges_b <- apply(combs_b, 2, function(col_names) lfc1(mat_b[, col_names[1]], mat_b[, col_names[2]]))
+dimnames(logfoldchanges_b)[[2]] <- apply(combs_b, 2, paste, collapse = '_')
+
+
+# logfoldchanges <- logfoldchanges - 1
+logfoldchanges_a <- as.data.frame(logfoldchanges_a)
+LFC_CD8 <- rownames_to_column(logfoldchanges_a, var = "Merged_Peak_ID")
+
+logfoldchanges_b <- as.data.frame(logfoldchanges_b)
+LFC_VD1 <- rownames_to_column(logfoldchanges_b, var = "Merged_Peak_ID")
 
 
 ## Organising by the most foldchanged ones
-head(LFC)
-z <- y[, colnames(y) %in% c("Merged_Peak_ID", "Gene.Name")]
-
-these <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "CD8.EMRA_CD8.NAIVE", "VD1.Eff_VD1.Naive")]
+z <- y[, colnames(y) %in% c("Merged_Peak_ID", "Gene.Name", "Entrez.ID")]
 
 
-Cd8 <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "CD8.EMRA_CD8.NAIVE")]
-Vd1 <- LFC[, colnames(LFC) %in% c("Merged_Peak_ID", "VD1.Eff_VD1.Naive")]
+head(y)
+LFC_VD1$FoldChange <- abs(LFC_VD1$VD1.Eff_VD1.Naive)
+LFC_CD8$FoldChange <- abs(LFC_CD8$CD8.EMRA_CD8.NAIVE)
 
-Vd1$FoldChange <- abs(Vd1$VD1.Eff_VD1.Naive)
-Cd8$FoldChange <- abs(Cd8$CD8.EMRA_CD8.NAIVE)
+Vd1_gene <- merge(LFC_VD1, z, by = "Merged_Peak_ID")
+CD8_gene <- merge(LFC_CD8, z, by = "Merged_Peak_ID")
 
-
-
-
-Vd1_gene <- merge(Vd1, z, by = "Merged_Peak_ID")
-Cd8_gene <- merge(Cd8, z, by = "Merged_Peak_ID")
-
-
-Vd1_ordered <- Vd1_gene[order(Vd1_gene$FoldChange, decreasing = T),]
-Cd8_ordered <- Cd8_gene[order(Cd8_gene$FoldChange, decreasing = T),]
+Vd1_ordered <- Vd1_gene[order(Vd1_gene$FoldChange, decreasing = T),] %>% droplevels()
+Cd8_ordered <- CD8_gene[order(CD8_gene$FoldChange, decreasing = T),] %>% droplevels()
 
 ## Top guys
+Vd1_ordered$Entrez.ID <- as.factor(Vd1_ordered$Entrez.ID)
+
+VD1_list <- list()
+for(i in levels(Vd1_ordered$Entrez.ID)){
+  print(i)
+  work <- droplevels(subset(Vd1_ordered, Entrez.ID == i))
+  try <- work[which.max(work$FoldChange),]
+  VD1_list[[i]] <- try
+}
+VD1_un <- do.call(rbind, VD1_list)
+
+
+Cd8_ordered$Entrez.ID <- as.factor(Cd8_ordered$Entrez.ID)
+CD8_list <- list()
+for(i in levels(Cd8_ordered$Entrez.ID)){
+  print(i)
+  work <- droplevels(subset(Cd8_ordered, Entrez.ID == i))
+  try <- work[which.max(work$FoldChange),]
+  CD8_list[[i]] <- try
+}
+CD8_un <- do.call(rbind, CD8_list)
+
+head(CD8_un)
+
+
+Vd1_ordered1 <- VD1_un[order(VD1_un$FoldChange, decreasing = T),] %>% droplevels()
+Cd8_ordered1 <- CD8_un[order(CD8_un$FoldChange, decreasing = T),] %>% droplevels()
+
+
+to_write_Vd1 <- Vd1_ordered1[, !('%in%'(colnames(Vd1_ordered1), "FoldChange"))]
+to_write_Cd8 <- Cd8_ordered1[, !('%in%'(colnames(Cd8_ordered1), "FoldChange"))]
+
+droplevels(subset(to_write_Cd8, Gene.Name == "IFNG"))
+droplevels(subset(Cd8_ordered, Gene.Name == "TBX21"))
+
+
+
+write_
+
+
+range(to_write_Cd8$CD8.EMRA_CD8.NAIVE)
+range(to_write_Vd1$VD1.Eff_VD1.Naive)
+
+
+
+head(Vd1_ordered1)
+head(to_write_Cd8)
+head(to_write_Vd1)
+
+head(Vd1_ordered1)
+
+
+
+
+
+
+Vd1_ordered[grepl("PRDM1", Vd1_ordered$Gene.Name),]
+
 Top_Vd1 <- head(Vd1_ordered, 5000)$Gene.Name %>% droplevels()
 
 Top_Cd8 <- head(Cd8_ordered, 5000)$Gene.Name %>% droplevels()
@@ -131,6 +187,13 @@ supp_Cd8 <- tail(Cd8_ordered, 800)$Gene.Name %>% droplevels()
 
 supp_Vd1[supp_Vd1 %in% supp_Cd8]
 
+
+
+
+
+
+
+####################
 
 # FIND WHERE THESE PEAKS LIE...
 
