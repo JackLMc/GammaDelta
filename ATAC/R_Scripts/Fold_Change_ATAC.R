@@ -144,7 +144,11 @@ Cd8_ordered1 <- CD8_un[order(CD8_un$FoldChange, decreasing = T),] %>% droplevels
 to_write_Vd1 <- Vd1_ordered1[, !('%in%'(colnames(Vd1_ordered1), "FoldChange"))]
 to_write_Cd8 <- Cd8_ordered1[, !('%in%'(colnames(Cd8_ordered1), "FoldChange"))]
 
-droplevels(subset(to_write_Cd8, Gene.Name == "IFNG"))
+
+write.csv("../Output/Vd1_log_fold.csv", x =  to_write_Vd1, row.names = F)
+write.csv("../Output/Cd8_log_fold.csv", x =  to_write_Cd8, row.names = F)
+
+ droplevels(subset(to_write_Cd8, Gene.Name == "IFNG"))
 droplevels(subset(Cd8_ordered, Gene.Name == "TBX21"))
 
 
