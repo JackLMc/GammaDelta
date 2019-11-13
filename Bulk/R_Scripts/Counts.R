@@ -73,7 +73,7 @@ colnames(x) <- c("28MD.CD8.EMRA", "28MD.CD8.Naive", "28MD.VD1.CD27HI", "28MD.VD1
 samplenames <- colnames(x)
 
 # Gaining second dataframe (Symbols)
-# biocLite("Homo.sapiens", dependencies = T)
+# BiocManager::install("Homo.sapiens",dependencies = T)
 library(Homo.sapiens)
 geneid <- rownames(x)
 genes <- select(Homo.sapiens, keys = geneid, columns = c("SYMBOL", "TXCHROM"), 
@@ -305,6 +305,8 @@ tfit <- treat(vfit, lfc = 1)
 summary(decideTests(tfit))
 
 dt <- decideTests(efit)
+
+head(dt)
 # summary(dt)
 
 de.common <- which(dt[,1]!=0 & dt[,8]!=0)
