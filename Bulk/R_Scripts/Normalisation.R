@@ -65,6 +65,12 @@ lcpm <- cpm(x2, log = T)
 boxplot(lcpm, las = 2, col = col, main = "")
 title(main = "B. Example: Normalised data", ylab = "Log-cpm")
 
+getwd()
+
+
+
+write.table(as.data.frame(lcpm) %>% rownames_to_column(., var = "ENTREZID"), 
+            file = "../Output/log_cpm_counts.txt", sep = "\t", quote = F, row.names = F)
 
 # Unsupervised clustering of samples & runs
 library(RColorBrewer)

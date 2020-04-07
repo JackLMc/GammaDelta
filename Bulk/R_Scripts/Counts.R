@@ -973,16 +973,4 @@ this <- rownames_to_column(cam.CD27LO.vs.CD27HI, var = "KEGG")
 that <- droplevels(subset(this, FDR < 0.01))
 length(that$KEGG)
 
-
-that2 <- that$KEGG
-
-
-that1
-that2
-
-length(kegg_human[["hsa00190 Oxidative phosphorylation"]])
-?prcomp
-
- length(kegg_human[["hsa03010 Ribosome"]])
-
  
