@@ -53,7 +53,15 @@ dodge = position_dodge(width = 0.9)
 cpms3$group <- factor(cpms3$group,levels = c("CD8.Naive", "CD8.EMRA", "VD1.CD27HI", "VD1.CD27LO"))
 
 
-these_genes <- c("TCF7", "LEF1", "MYC", "TBX21", "EOMES", "PRDM1")
+these_genes <- c("TCF7", "LEF1", "MYC", "TBX21", "EOMES", "PRDM1", "KLRG1", "C8orf31", "CD69")
+
+
+
+droplevels(subset(cpms3, external_gene_name == "C8orf31"))
+droplevels(subset(cpms3, external_gene_name == "KLRG1"))
+droplevels(subset(cpms3, external_gene_name == "CD69"))
+
+
 
 # cpms3[grep("TNF", cpms3$external_gene_name),]
 
