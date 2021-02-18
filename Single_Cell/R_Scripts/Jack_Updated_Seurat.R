@@ -7,7 +7,6 @@
 #### This uses only the cells that passed QC based on read numbers etc. 
 #### It's also based on the initial exploratory analyses done elsewhere.
 set.seed(2021) # Year of reanalysis
-#can I do it here?
 
 # Load up packages and make common variables
 cbcols <- c("VD1.CD27LO" = "#999999",
