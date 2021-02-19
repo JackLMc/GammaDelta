@@ -22,19 +22,22 @@ setwd("./Single_Cell/")
 load("RData/SeuratAnalyses.RData")
 
 
-clonality_values <- read.table("./Single_Cell/Data/cell_clonality_from_iRep.csv", sep = ",", row.names = 1, header = T)
+clonality_values <- read.table("./Data/cell_clonality_from_iRep.csv", sep = ",", row.names = 1, header = T)
 
 ### 10 in this table indicates that a sequence wasn't detected by TraCer. 
 ### A value of 0 shows that the sequence deteced by TraCeR wasn't in the iRepertoire data. 
 
-gd.data_noBatch <- AddMetaData(object = gd.data_noBatch,
-                               metadata = clonality_values,
-                               col.name = "sort_class")
+name_map <- read.csv("Data/name_map.txt", sep = "\t", row.names = 1)
+rownames(name_map) = paste('X', rownames(name_map), sep = "")
+name_map$sort_class <- ifelse((name_map$sort_class == "naive"), "VD1.CD27HI", "VD1.CD27LO")
+name_map <- name_map[rownames(name_map) %in% rownames(gd.data[[]]), ]
+name_map <- setNames(as.character(name_map$sort_class), rownames(name_map))
+gd.data <- AddMetaData(object = gd.data, metadata = name_map, col.name = "sort_class")
 
 
-FeaturePlot(gd.data_noBatch, 
-            c("D_clonality", "G_clonality", "max_clonality", "mean_clonality"),
-            reduction.use = "pca")
+gd.data@meta.data <- merge(gd.data@meta.data, clonality_values, by = 0) %>% column_to_rownames(., var = "Row.names")
+
+FeaturePlot(gd.data, c("D_clonality", "G_clonality", "max_clonality", "mean_clonality"), reduction = "pca")
 
 ### So this demonstrates that high clonality (as measured by iRepertoire) is only found in the EMRA-like population.
 ### For any comparisons involving expanded and non-expanded cells, we must only consider cells that are in the EMRA population to start with.
@@ -43,7 +46,7 @@ FeaturePlot(gd.data_noBatch,
 
 
 
-EMRA_clonality <- gd.data_noBatch@meta.data[gd.data_noBatch@meta.data$sort_class == "VD1.CD27LO", ]
+EMRA_clonality <- gd.data@meta.data[gd.data@meta.data$sort_class == "VD1.CD27LO", ]
 
 head(EMRA_clonality)
 hist(EMRA_clonality$D_clonality)
@@ -76,15 +79,15 @@ classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
     return(clone_class)
 }
 
-gd.data_noBatch <- AddMetaData(gd.data_noBatch, apply(gd.data_noBatch@meta.data, 1,
-                                                      classify_clonality,
-                                                      low_ceiling = 20,
-                                                      high_floor = 20),
-                               "clone_class_all")
+apply(gd.data@meta.data, 1,
+      classify_clonality,
+      low_ceiling = 20,
+      high_floor = 20)
 
-head(gd.data_noBatch@meta.data)
+gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+                                      low_ceiling = 20, high_floor = 20), "clone_class_all")
+
 ### Then do again for just the EMRA cells
-
 classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
     max_clonality = as.numeric(x["max_clonality"])
     sort_class = x["sort_class"]
@@ -100,45 +103,40 @@ classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
     return(clone_class)
 }
 
-gd.data_noBatch <- AddMetaData(gd.data_noBatch, apply(gd.data_noBatch@meta.data, 1,
-                                                      classify_clonality,
-                                                      low_ceiling = 20,
-                                                      high_floor = 20),
-                               "clone_class_EMRA")
+gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+                                      low_ceiling = 20, high_floor = 20),
+                       "clone_class_EMRA")
 
 ### Below is the plot where we assign clonality classes to all the cells no matter their sort identity
-PCAPlot(gd.data_noBatch, do.return = T, group.by = "clone_class_all", no.legend = F)
+PCAPlot(gd.data, group.by = "clone_class_all")
 
 ### Then we can compare this with the same plot if we only assign clonality classes to the cells sorted CD27lo cells.
-PCAPlot(gd.data_noBatch, do.return = T, group.by = "clone_class_EMRA", no.legend = F)
+PCAPlot(gd.data, group.by = "clone_class_EMRA")
 
 
 ### So there are a couple in the naive sort that were at least detected in the iRepertoire data but really not many.
 ### Now re-do the EMRA clone class so that it contains the two bins discussed above.
+gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+                                      low_ceiling = 10, high_floor = 20), "clone_class_EMRA")
+PCAPlot(gd.data, group.by = "clone_class_EMRA")
 
-gd.data_noBatch <- AddMetaData(gd.data_noBatch,
-                               apply(gd.data_noBatch@meta.data, 1,
-                                     classify_clonality,
-                                     low_ceiling = 10,
-                                     high_floor = 20),
-                               "clone_class_EMRA")
 
-PCAPlot(gd.data_noBatch, do.return = T,
-        group.by = "clone_class_EMRA",
-        no.legend = F)
+### UNSURE?!
+gd.data_Clonality <- gd.data
+Idents(gd.data_Clonality) <- "clone_class_EMRA"
 
-gd.data_noBatch <- SetAllIdent(gd.data_noBatch, "clone_class_EMRA")
+gd.data_Clonality[["data"]]
 
-gd.data_noBatch@data <- as.matrix(gd.data_noBatch@data)
+gd.data_Clonality@assays$RNA@scale.data <- as.matrix(gd.data_Clonality@assays$RNA@scale.data)
 
-high_clonality_markers <- FindMarkers(gd.data_noBatch, ident.1 = "high_clonality", ident.2 = "no_class", min.pct = 0.25, only.pos = T)
-low_clonality_markers = FindMarkers(gd.data_noBatch, "low_clonality", "high_clonality", min.pct = 0.25, only.pos = T)
+high_clonality_markers <- FindMarkers(gd.data_Clonality, ident.1 = "high_clonality", ident.2 = "no_class", min.pct = 0.25, only.pos = T)
+low_clonality_markers = FindMarkers(gd.data_Clonality, "low_clonality", "high_clonality", min.pct = 0.25, only.pos = T)
 
-write.table(high_clonality_markers, file = "./Single_Cell/Output/high_clonality_markers.txt", sep = "\t", quote = F)
-write.table(low_clonality_markers, file = "./Single_Cell/Output/low_clonality_markers.txt", sep = "\t", quote = F)
+write.table(high_clonality_markers, file = "./Output/high_clonality_markers.txt", sep = "\t", quote = F)
+write.table(low_clonality_markers, file = "./Output/low_clonality_markers.txt", sep = "\t", quote = F)
 
 ### Is there anything interesting going on with the set of markers plotted above when we look at high vs low clonality cells?
-VlnPlot(gd.data_noBatch, 
+VlnPlot(gd.data_Clonality, 
         c("PRF1",
           "GZMA",
           "CX3CR1",
@@ -147,136 +145,115 @@ VlnPlot(gd.data_noBatch,
           "LEF1",
           "IL7R",
           "LTB",
-          "GZMB"), nCol = 2)
+          "GZMB"), ncol = 2)
 
 high_clonality_markers[c("PRF1", "GZMA", "GZMB", "CX3CR1", "TCF7"), ]
 
 ### Granzyme B looks to be significantly up in the high-clonality cells but perforin and GZMA not so much. Also, TCF7 appears higher in the high-clonality cells - that's a bit strange because that's typically associated with the naive cells.
 ### It's possible that these differences are actually due to a single large clone being different to the others. We should now look at differences between individual clones.
 #### I don't agree with this above... Seems to show the perfect story...
-clonotype_metadata <- read.table("./Single_Cell/Data/clonotype_metadata.txt", row.names = 1)
+clonotype_metadata <- read.table("./Data/clonotype_metadata.txt", row.names = 1)
 colnames(clonotype_metadata) = "clonotype"
 
-gd.data_noBatch <- AddMetaData(gd.data_noBatch, clonotype_metadata[rownames(gd.data_noBatch@meta.data),,drop = F], "clonotype")
-head(gd.data_noBatch@meta.data)
+gd.data_Clonality <- AddMetaData(gd.data_Clonality, clonotype_metadata[rownames(gd.data_Clonality@meta.data),,drop = F], "clonotype")
+head(gd.data_Clonality@meta.data)
 
 ### A clonotype of 'X' means that it was a unique cell.
-### Let's plot the clonotypes all together
-test = PCAPlot(gd.data_noBatch, group.by = "clonotype", do.return = T)
-test2 = ggplot_build(test)
+#### Need to get a palette of 14 colours
 
-fill_colours = names(sort(table(test2$data[[1]]["colour"]), decreasing = T))[2:14]
-cols = append(fill_colours, c("#D3D3D3"))
-# install.packages("randomcoloR")
-set.seed(1)
-library(randomcoloR)
-n <- 14
-palette <- distinctColorPalette(n)
+# temp <- c(5,7,6,4,8)
+# barplot(temp, col = "#B53FE3") # test colours out
 
-# display_col("#D5D3D9")
-# display_cols("#999999")
-palette <- gsub("#DAD65F", "#999999", palette)
-palette <- gsub("#D5D3D9", "#DAD65F", palette)
+clonalityColours <- c("A" = "#DB724F", "B" = "#B53FE3", "C" = "#DAD65F", "D" = "#DD59B8",
+                      "E" = "#D7CC97", "F" = "#78D9DC", "G" = "#D2A0DF", "H" = "#766ED9",
+                      "I" = "#6FE18E", "J" = "#A0E2BC", "K" = "#94EA4E", "L" = "#79A0C9",
+                      "M" = "#D38B99", "X" = "#999999")
 
 
-pdf("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Single_Cell/Figures/Gamma-Delta/Clonality.pdf")
-PCAPlot(gd.data_noBatch, group.by = "clonotype", do.return = T, cols.use = palette) +
+cols_for_sort <- c("VD1.CD27LO" = "#999999", "VD1.CD27HI" = "#009E73")
+
+pdf("./Figures/CellReportsRewrite/1F_Clonality.pdf")
+PCAPlot(gd.data_Clonality, group.by = "clonotype", cols = clonalityColours) +
   theme(legend.title = element_blank(), legend.position = "top")
 dev.off()
 
-theme_bw() + 
+# Is it statistically significant that EMRA-like cells have more cells in an expanded clone than not?
+metaClonal <- gd.data_Clonality@meta.data
+
+head(metaClonal)
+
+eff <- droplevels(subset(metaClonal, sort_class == "VD1.CD27LO"))
+eff$expanded <- ifelse((eff$clonotype != "X"), "ExpandedPopulation", "Singlet")
+neededEff <- eff %>% dcast(orig.ident ~ expanded)
+
+
+try <- gather(neededEff, key = "param", value = "number", -orig.ident)
+
+library(ggpubr)
+my_comparisons <- list(c("ExpandedPopulation", "Singlet"))
+ggplot(try, aes(x = param, y = number)) +
+  geom_boxplot(alpha = 0.5, width = 0.2) + 
+  geom_violin(aes(param, fill = param),
+              scale = "width", alpha = 0.8) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 16)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(legend.title = element_blank(), legend.position = "top")
-
-### Colour only the biggest clones
-PC_coords <- as.data.frame(GetDimReduction(object = gd.data_noBatch, reduction.type = "pca", 
-                slot = "cell.embeddings"))
-meta_data <- gd.data_noBatch@meta.data
-
-meta_data1 <- merge(PC_coords, meta_data, by = "row.names")
-Clusters <- as.character(gd.data_noBatch@ident)
-MD <- meta_data1
-head(Clusters)
+  theme(legend.direction = "horizontal", legend.position = "top") + 
+  stat_compare_means(comparisons = my_comparisons,
+                     label = "p.signif", method = "wilcox.test")
 
 
-MD$Sorted_Class <- ifelse((MD$res.0.2 == "0"), "Cluster_1", "Cluster_2")
-MD$Type <- ifelse((MD$clonotype == "A"), "A",
-                  ifelse((MD$clonotype == "E"), "E",
-                         ifelse((MD$clonotype == "K"), "K", "Other")))
 
-head(MD)
-MD$Unique <- paste(MD$Sorted_Class, MD$Type, sep = "_")
-
-library(ggplot2)
-cols_to_use <- c("Cluster_2_Other" = "#999999",
-                 "Cluster_1_Other" = "#009E73",
-                 "Cluster_1_E" = "#E69F00",
-                 "Cluster_2_A" = "#000000",
-                 "Cluster_2_E" = "#CC79A7",
-                 "Cluster_2_K" = "#56B4E9")
-
-cols_to_use <- c("Other" = "#999999",
-                 "A" = "#000000",
-                 "E" = "#CC79A7",
-                 "K" = "#56B4E9")
-
-
-subset(MD, Unique == "Cluster_1_E")
-
-MD$Row.names <- as.character(MD$Row.names)
-
-
-pdf("./Single_Cell/Figures/Gamma-Delta/Clonality.pdf")
-ggplot(MD, aes(x = PC1, y = PC2, color = clonotype)) + 
-  geom_point()+
-  scale_color_manual(values = cols)+ 
-  theme_bw() + 
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(legend.title = element_blank(), legend.position = "top")
-dev.off()
-
-
- ### So, are there markers that distinguish one clonotype from all the others? 
+### So, are there markers that distinguish one clonotype from all the others? 
 ### Probably only worth doing for the larger clonotypes (A, E, J, K)
 
-table(gd.data_noBatch@meta.data["clonotype"])
+table(gd.data_Clonality@meta.data["clonotype"])
 ### So, clonotypes A, E, J and K worth looking at further I think
 
-gd.data_noBatch = SetAllIdent(gd.data_noBatch, "clonotype")
+
+Idents(gd.data_Clonality) <- "clonotype"
+
+## For each donor, find the largest clone
+metaClonal %>% dcast(orig.ident ~ clonotype)
 
 ### Calculate markers for each individual clonotype
-clonotype_A_markers = FindMarkers(gd.data_noBatch, "A", c("E","J","K"))
-clonotype_E_markers = FindMarkers(gd.data_noBatch, "E", c("A","J","K"))
-clonotype_J_markers = FindMarkers(gd.data_noBatch, "J", c("A","E","K"))
-clonotype_K_markers = FindMarkers(gd.data_noBatch, "K", c("A","E","J"))
+clonotype_A_markers <- FindMarkers(gd.data_Clonality, "A", c("E","J","K")) %>% rownames_to_column(., var = "SYMBOL")
+clonotype_E_markers <- FindMarkers(gd.data_Clonality, "E", c("A","J","K")) %>% rownames_to_column(., var = "SYMBOL")
+clonotype_J_markers <- FindMarkers(gd.data_Clonality, "J", c("A","E","K")) %>% rownames_to_column(., var = "SYMBOL")
+clonotype_K_markers <- FindMarkers(gd.data_Clonality, "K", c("A","E","J")) %>% rownames_to_column(., var = "SYMBOL")
 
-clonotype_A_markers = FindMarkers(gd.data_noBatch, "A", c("E","K")) %>% rownames_to_column(., var = "SYMBOL")
-clonotype_E_markers = FindMarkers(gd.data_noBatch, "E", c("A", "K")) %>% rownames_to_column(., var = "SYMBOL")
-clonotype_K_markers = FindMarkers(gd.data_noBatch, "K", c("A", "E")) %>% rownames_to_column(., var = "SYMBOL")
+clonotype_JK_markers <- FindMarkers(gd.data_Clonality, c("J", "K"), c("A","E")) %>% rownames_to_column(., var = "SYMBOL")
 
 
+# clonotype_A_markers <- FindMarkers(gd.data_Clonality, "A", c("E","K")) %>% rownames_to_column(., var = "SYMBOL")
+# clonotype_E_markers <- FindMarkers(gd.data_Clonality, "E", c("A", "K")) %>% rownames_to_column(., var = "SYMBOL")
+# clonotype_K_markers <- FindMarkers(gd.data_Clonality, "K", c("A", "E")) %>% rownames_to_column(., var = "SYMBOL")
 
-write.csv(droplevels(subset(clonotype_A_markers, p_val_adj < 0.05)), file = "./Single_Cell/Output/Clono_New/A_markers.csv", row.names = F)
-write.csv(droplevels(subset(clonotype_E_markers, p_val_adj < 0.05)), file = "./Single_Cell/Output/Clono_New/E_markers.csv", row.names = F)
-write.csv(droplevels(subset(clonotype_K_markers, p_val_adj < 0.05)), file = "./Single_Cell/Output/Clono_New/K_markers.csv", row.names = F)
+
+
+write.csv(droplevels(subset(clonotype_A_markers, p_val_adj < 0.05)), file = "./Output/Clono_New/A_markers.csv", row.names = F)
+write.csv(droplevels(subset(clonotype_E_markers, p_val_adj < 0.05)), file = "./Output/Clono_New/E_markers.csv", row.names = F)
+write.csv(droplevels(subset(clonotype_K_markers, p_val_adj < 0.05)), file = "./Output/Clono_New/K_markers.csv", row.names = F)
+write.csv(droplevels(subset(clonotype_J_markers, p_val_adj < 0.05)), file = "./Output/Clono_New/J_markers.csv", row.names = F)
+write.csv(droplevels(subset(clonotype_JK_markers, p_val_adj < 0.05)), file = "./Output/Clono_New/JK_markers.csv", row.names = F)
 
 
 
 ### Since we only have four of interest we can also do the 2 vs 2 comparisons. Not sure how useful these will be.
 ### Since each group here contains half of the clonotype classes we can just do three comparisons and include both negative and positive markers. So, for clonotype_AE_markers the positive markers will be the ones up in both A and E whilst the negative markers will be the ones up in J and K.
-
-clonotype_AE_markers = FindMarkers(gd.data_noBatch, c("A","E"), c("J","K"))
-clonotype_AJ_markers = FindMarkers(gd.data_noBatch, c("A","J"), c("E","K"))
-clonotype_AK_markers = FindMarkers(gd.data_noBatch, c("A","K"), c("E","J"))
-
-### Write out all the marker tables we've made here
-write.table(clonotype_A_markers, "Output/clonotype_A_markers.txt", sep = "\t", quote = F)
-write.table(clonotype_E_markers, "Output/clonotype_E_markers.txt", sep = "\t", quote = F)
-write.table(clonotype_J_markers, "Output/clonotype_J_markers.txt", sep = "\t", quote = F)
-write.table(clonotype_K_markers, "Output/clonotype_K_markers.txt", sep = "\t", quote = F)
-write.table(clonotype_AE_markers, "Output/clonotype_AE_markers.txt", sep = "\t", quote = F)
-write.table(clonotype_AJ_markers, "Output/clonotype_AJmarkers.txt", sep = "\t", quote = F)
-write.table(clonotype_AK_markers, "Output/clonotype_AK_markers.txt", sep = "\t", quote = F)
+# 
+# clonotype_AE_markers = FindMarkers(gd.data_Clonality, c("A","E"), c("J","K"))
+# clonotype_AJ_markers = FindMarkers(gd.data_Clonality, c("A","J"), c("E","K"))
+# clonotype_AK_markers = FindMarkers(gd.data_Clonality, c("A","K"), c("E","J"))
+# 
+# ### Write out all the marker tables we've made here
+# write.table(clonotype_A_markers, "Output/clonotype_A_markers.txt", sep = "\t", quote = F)
+# write.table(clonotype_E_markers, "Output/clonotype_E_markers.txt", sep = "\t", quote = F)
+# write.table(clonotype_J_markers, "Output/clonotype_J_markers.txt", sep = "\t", quote = F)
+# write.table(clonotype_K_markers, "Output/clonotype_K_markers.txt", sep = "\t", quote = F)
+# write.table(clonotype_AE_markers, "Output/clonotype_AE_markers.txt", sep = "\t", quote = F)
+# write.table(clonotype_AJ_markers, "Output/clonotype_AJmarkers.txt", sep = "\t", quote = F)
+# write.table(clonotype_AK_markers, "Output/clonotype_AK_markers.txt", sep = "\t", quote = F)
 
 
 # Email from Carrie:
@@ -315,36 +292,23 @@ genes_for_violin = list(NK_receptors = c("KLRB1",
 
 genes_for_violin
 
-pdf(file = "Output/test.pdf")
-VlnPlot(gd.data_noBatch,c("KLRB1", "KLRG1", "KLRC2", "KLRC3"), 
-        size.x.use = 8, size.y.use = 8, size.title.use = 8, y.log = F,
-        group.by = "clonotype")
-VlnPlot(gd.data_noBatch,c("KLRC4", "CADM1", "FCGR3A", "FCGR3B"), size.x.use=8, size.y.use=8, size.title.use=8, y.log=F, group.by = "clonotype")
+# pdf(file = "Output/test.pdf")
+VlnPlot(gd.data_Clonality,c("KLRB1", "KLRG1", "KLRC2", "KLRC3"), group.by = "clonotype")
+VlnPlot(gd.data_Clonality,c("KLRC4", "CADM1", "FCGR3A", "FCGR3B"), group.by = "clonotype")
 dev.off()
 
-test = genes_for_violin[["NK_receptors"]]
 
-test
+save.image("./RData/ClonalityAnalyses.RData")
+# load("final_clonality_analysis.RData")
 
-test = split(test, ceiling(seq_along(test)/4))
-
-vp = function(g, data_to_use = gd.data_noBatch){
-    VlnPlot(data_to_use, g, size.x.use = 8,
-            size.y.use = 8,
-            size.title.use = 8,
-            y.log = F,
-            group.by = "clonotype")
+vp = function(g, data_to_use = gd.data_Clonality){
+  VlnPlot(data_to_use, g,
+          group.by = "clonotype")
 }
-
-vp(test[[1]])
-
-save.image("final_clonality_analysis.RData")
-
-load("final_clonality_analysis.RData")
 
 for (n in names(genes_for_violin)){ 
   print(n)
-  file = paste("Figures/Violin_Plots/", n, ".pdf", sep="")
+  file = paste("./Figures/CellReportsRewrite/Test/", n, ".pdf", sep="")
   pdf(file=file)
   genes = genes_for_violin[[n]]
   genes = split(genes, ceiling(seq_along(genes)/4))
@@ -354,50 +318,51 @@ for (n in names(genes_for_violin)){
 
 head(MD)
 
-identifiers <- as.data.frame(gd.data_noBatch@ident)
+identifiers <- as.data.frame(gd.data_Clonality@ident)
 head(identifiers)
 
 carrie = c("TRGV3", "TRGV2", "TRGV5", "TRBV11-3",
            "XIST")
 
-pdf("./Single_Cell/Figures/Gamma-Delta/Paper_ready/Supp1B_Clone_diffs.pdf", height = 6, width = 10)
-VlnPlot(gd.data_noBatch, carrie, 
-        nCol = 5, ident.include = c("A", "E", "K"), 
-        cols.use = c("A" = "#000000", "E" = "#CC79A7", "K" = "#56B4E9"))
+pdf("./Figures/CellReportsRewrite/Supp1B_Clone_diffs.pdf", height = 6, width = 10)
+VlnPlot(gd.data_Clonality, carrie, 
+        ncol = 5, idents = c("A", "E", "K", "J"), 
+        cols = c("A" = "#000000", "E" = "#CC79A7", "K" = "#56B4E9", "J" = "#FF6600"))
 dev.off()
 
-?VlnPlot
-these_genes <- c("XIST", "TRGV3", "TRGV2", "TRGV5", "TRBV11-3")
+## UNEEDED
 
-tpms <- as.data.frame(gd.data_noBatch@data)
-tpm1 <-tpms %>% rownames_to_column(., var = "gene") %>% gather(key = "Cell", value = "tpm", -gene)
-tpm2 <- tpm1[tpm1$gene %in% these_genes,]
-clusts <- as.data.frame(gd.data_noBatch@ident) %>% rownames_to_column(., var = "Cell")
-colnames(clusts) <- c("Cell", "Cluster")
-
-tpm3 <- merge(tpm2, clusts, by = "Cell")
-toplot <- tpm3[tpm3$Cluster %in% c("A", "E", "J"), ]
-
-toplot$log_tpm <- log(toplot$tpm + 1)
-library(ggpubr)
-
-dodge <- position_dodge(width = 0.9)
-
-toplot$gene <- as.factor(toplot$gene)
-for(i in levels(toplot$gene)){
-  print(i)
-  working <- droplevels(subset(toplot, gene == i))
-  temp_plot <- ggplot(working, aes(x = Cluster, y = tpm, fill = Cluster)) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", position = dodge, width = 0.5) +
-  stat_summary(fun.y = mean, geom = "bar", position = dodge) + 
-  theme_bw() + 
-  # scale_fill_manual(values = cbcols) +
-  labs(x = "Clonotype", y = paste0("TPM_", i)) + 
-  stat_compare_means(label = "p.signif", comparisons = list((c("A", "E")), c("A", "J"), c("E", "J"))) + 
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 12))
-  filen <- paste0(i, ".pdf")
-  ggsave(filen, plot = temp_plot, path = "./Single_Cell/Figures/Gamma-Delta/Supplementary")
-  }
-
-getwd()
+# these_genes <- c("XIST", "TRGV3", "TRGV2", "TRGV5", "TRBV11-3")
+# 
+# tpms <- as.data.frame(gd.data_Clonality@data)
+# tpm1 <-tpms %>% rownames_to_column(., var = "gene") %>% gather(key = "Cell", value = "tpm", -gene)
+# tpm2 <- tpm1[tpm1$gene %in% these_genes,]
+# clusts <- as.data.frame(gd.data_Clonality@ident) %>% rownames_to_column(., var = "Cell")
+# colnames(clusts) <- c("Cell", "Cluster")
+# 
+# tpm3 <- merge(tpm2, clusts, by = "Cell")
+# toplot <- tpm3[tpm3$Cluster %in% c("A", "E", "J"), ]
+# 
+# toplot$log_tpm <- log(toplot$tpm + 1)
+# library(ggpubr)
+# 
+# dodge <- position_dodge(width = 0.9)
+# 
+# toplot$gene <- as.factor(toplot$gene)
+# for(i in levels(toplot$gene)){
+#   print(i)
+#   working <- droplevels(subset(toplot, gene == i))
+#   temp_plot <- ggplot(working, aes(x = Cluster, y = tpm, fill = Cluster)) +
+#   stat_summary(fun.data = mean_se, geom = "errorbar", position = dodge, width = 0.5) +
+#   stat_summary(fun.y = mean, geom = "bar", position = dodge) + 
+#   theme_bw() + 
+#   # scale_fill_manual(values = cbcols) +
+#   labs(x = "Clonotype", y = paste0("TPM_", i)) + 
+#   stat_compare_means(label = "p.signif", comparisons = list((c("A", "E")), c("A", "J"), c("E", "J"))) + 
+#   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, 12))
+#   filen <- paste0(i, ".pdf")
+#   ggsave(filen, plot = temp_plot, path = "./Single_Cell/Figures/Gamma-Delta/Supplementary")
+#   }
+# 
+# getwd()
