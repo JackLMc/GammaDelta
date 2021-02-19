@@ -1,11 +1,27 @@
-library(Seurat)
-load("./Single_Cell/Final_seurat.RData")
-# library(devtools)
-# install_version("Seurat", version = "2.3.4", repos = "http://cran.us.r-project.org")
+# A script to investigate the clonality of the cells gained from Mike Stubbington analyses
+## Original Author: Xi Chen (pre Seurat Version 2.3.4)
+## Co-Author: Jack McMurray (Updated to Seurat 2.3.4, and then to version 4.0.0)
 
 ### Clonality values for each cell were calculated by looking for the TraCeR-derived TCR sequences in the iRepertoire data (represented as percentages).
 ### It's not entirely obvious which metric we should use to define a single 'clonality score' for a cell given that there are two loci but they are not always detected by TraCeR in every cell. 
 ### In reality it probably doesn't make a huge amount of difference.
+set.seed(2021) # Year of reanalysis
+
+# Load up packages and make common variables
+cbcols <- c("VD1.CD27LO" = "#999999",
+            "CD8.EMRA" = "#56B4E9",
+            "CD8.Naive" = "#E69F00",
+            "VD1.CD27HI" = "#009E73",
+            "VD2" = "#CC79A7")
+
+## Loading tools and data ##
+#### We're using the [Seurat](http://satijalab.org/seurat/) packages for single-cell analysis
+library(Seurat)
+library(tidyverse)
+setwd("./Single_Cell/")
+load("RData/SeuratAnalyses.RData")
+
+
 clonality_values <- read.table("./Single_Cell/Data/cell_clonality_from_iRep.csv", sep = ",", row.names = 1, header = T)
 
 ### 10 in this table indicates that a sequence wasn't detected by TraCer. 

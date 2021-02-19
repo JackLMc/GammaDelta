@@ -1,6 +1,6 @@
 # A script to investigate the single-cell RNA sequencing data from Mike Stubbington on GammaDelta T-cells
-# Original Author: Xi Chen (pre Seurat Version 2.3.4)#
-# Co-Author: Jack McMurray (Updated to Seurat 2.3.4, and then to version 4.0.0#
+# Original Author: Xi Chen (pre Seurat Version 2.3.4)
+# Co-Author: Jack McMurray (Updated to Seurat 2.3.4, and then to version 4.0.0)
 
 ###############################################################################
 #### This is the final set of transcriptomic analyses of the gamma-delta cells. 
