@@ -238,6 +238,9 @@ pca <- gd.data[["pca"]]
 eigValues <- (gd.data[["pca"]]@stdev)^2  ## EigenValues
 varExplained <- eigValues / gd.data[["pca"]]@misc$total.variance ### VERY VERY LOW??
 
+(gd.data[["pca"]]@stdev)^2/sum((gd.data[["pca"]]@stdev)^2) * 100
+
+
 
 DimPlot(gd.data, reduction = "pca", cols = c("#999999", "#009E73", "#000000"), dims = c(1, 2))
 
