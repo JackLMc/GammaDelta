@@ -311,7 +311,7 @@ DimPlot(gd.data, reduction = "pca", cols = c("#999999","#009E73"), dims = c(1, 2
 
 #### Do these split along the same lines as the sort classes
 cluster.ids <- c("Cluster_1", "Cluster_2")
-gd.data@meta.data$ident <- ifelse((gd.data@meta.data$seurat_clusters == "0"), "Cluster_1", "Cluster_2")
+gd.data@meta.data$ident <- ifelse((gd.data@meta.data$seurat_clusters == "1"), "Cluster_1", "Cluster_2")
 
 #### Plots to write out ####
 data.plot <- gd.data@reductions$pca@cell.embeddings %>% as.data.frame()
@@ -332,7 +332,7 @@ ggplot(data.plot_cluster,
 dev.off()
 
 ### Clusters
-cols_for_clusts <- c("Cluster_1" = "#999999", "Cluster_2" = "#009E73")
+cols_for_clusts <- c("Cluster_1" = "#009E73", "Cluster_2" = "#999999")
 
 pdf("./Figures/CellReportsRewrite/1B_PCA_ClusteredClass.pdf")
 ggplot(data.plot_cluster, 
@@ -353,7 +353,7 @@ dev.off()
 library(tidyverse)
 clustered <- gd.data@meta.data %>% as.data.frame()
 
-clustered$matches_ <- ifelse((clustered$ident == "Cluster_2"), "VD1.CD27HI", "VD1.CD27LO")
+clustered$matches_ <- ifelse((clustered$ident == "Cluster_1"), "VD1.CD27HI", "VD1.CD27LO")
 comparison <- clustered
 total.cells <- nrow(comparison)
 
@@ -362,7 +362,15 @@ matching.cells <- nrow(matching)
 
 concordance <- matching.cells/total.cells
 concordance # The sort and clustering phenotypes are 91% concordant
+library(reshape2)
+dcast(clustered, ident ~ sort_class)
 
+continSort <- dcast(clustered, sort_class ~ ident) %>% column_to_rownames(., var  = "sort_class")
+chisq_S <- chisq.test(continSort)
+
+
+198 / (198 + 7) # Naive cells are 97% concordant with the cluster we thought
+212 / (212 + 31) # Effector cells are 87% concordant with the cluster we thought
 
 ## Remake the Heatmap ##
 #### Get scaled data, and the data to colour by
@@ -373,7 +381,7 @@ meta <- as.data.frame(gd.data@meta.data) %>%
   rownames_to_column("Cells")
 meta1 <- meta[, c("Cells", "ident")]
 meta1$ident <- as.factor(meta1$ident)
-col.cell1 <- c("#999999", "#009E73")[meta1$ident]
+col.cell1 <- c("#009E73", "#999999")[meta1$ident]
 data.frame(meta1$ident, col.cell1)
 
 #### Gain the topGenes
@@ -399,7 +407,7 @@ heatmap.2(as.matrix(data.use[genes.ordered,]),
           dendrogram = "none", hclustfun = hclustAvg, labCol = NA)
 par(xpd = T)
 legend(x = 0.87, y = 1.065,
-       fill = c("#999999", "#009E73"),
+       fill = c("#009E73", "#999999"),
        legend = levels(meta1$ident))
 dev.off()
 

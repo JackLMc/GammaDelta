@@ -19,188 +19,180 @@ cbcols <- c("VD1.CD27LO" = "#999999",
 library(Seurat)
 library(tidyverse)
 setwd("./Single_Cell/")
-load("RData/SeuratAnalyses.RData")
-
-
-clonality_values <- read.table("./Data/cell_clonality_from_iRep.csv", sep = ",", row.names = 1, header = T)
-
-### 10 in this table indicates that a sequence wasn't detected by TraCer. 
-### A value of 0 shows that the sequence deteced by TraCeR wasn't in the iRepertoire data. 
-
-name_map <- read.csv("Data/name_map.txt", sep = "\t", row.names = 1)
-rownames(name_map) = paste('X', rownames(name_map), sep = "")
-name_map$sort_class <- ifelse((name_map$sort_class == "naive"), "VD1.CD27HI", "VD1.CD27LO")
-name_map <- name_map[rownames(name_map) %in% rownames(gd.data[[]]), ]
-name_map <- setNames(as.character(name_map$sort_class), rownames(name_map))
-gd.data <- AddMetaData(object = gd.data, metadata = name_map, col.name = "sort_class")
-
-
-gd.data@meta.data <- merge(gd.data@meta.data, clonality_values, by = 0) %>% column_to_rownames(., var = "Row.names")
-
-FeaturePlot(gd.data, c("D_clonality", "G_clonality", "max_clonality", "mean_clonality"), reduction = "pca")
-
-### So this demonstrates that high clonality (as measured by iRepertoire) is only found in the EMRA-like population.
-### For any comparisons involving expanded and non-expanded cells, we must only consider cells that are in the EMRA population to start with.
-### Otherwise, any differences will be swamped by the EMRA vs naive differences which aren't interesting here.
-### Can we divide cells into bins depending on their clonality values and then compare markers between these bins?
-
-
-
-EMRA_clonality <- gd.data@meta.data[gd.data@meta.data$sort_class == "VD1.CD27LO", ]
-
-head(EMRA_clonality)
-hist(EMRA_clonality$D_clonality)
-hist(EMRA_clonality$G_clonality)
-hist(EMRA_clonality$max_clonality)
-hist(EMRA_clonality$mean_clonality)
-
-### Let's divide the cells into two classes using max_clonality
-### Low clonality (0-10%)
-### High clonality (>20%)
-### and see if we can identify discriminating markers between these populations. 
-### Ideally, this would be relatively robust to changes in these boundaries.
-### We'll make a function to classify the cells and use this to annotate them for markers etc. 
-### The function will be applied to every row in the metadata table.
-### First show if there are any cells at all in the naive sort class that were detected in the iRepertoire data.
-
-classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
-    max_clonality = as.numeric(x["max_clonality"])
-    sort_class = x["sort_class"]
-    clone_class = "no_class"
-    #if (max_clonality>0 && sort_class == "EMRA") {
-    if (max_clonality>0) {
-        if (max_clonality < low_ceiling){
-            clone_class = "low_clonality"
-        } else if (max_clonality>high_floor){
-            clone_class = "high_clonality"
-        } else{
-        } 
-    }
-    return(clone_class)
-}
-
-apply(gd.data@meta.data, 1,
-      classify_clonality,
-      low_ceiling = 20,
-      high_floor = 20)
-
-gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
-                                      low_ceiling = 20, high_floor = 20), "clone_class_all")
-
-### Then do again for just the EMRA cells
-classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
-    max_clonality = as.numeric(x["max_clonality"])
-    sort_class = x["sort_class"]
-    clone_class = "no_class"
-    if (max_clonality>0 && sort_class == "VD1.CD27LO") {
-        if (max_clonality < low_ceiling){
-            clone_class = "low_clonality"
-        } else if (max_clonality>high_floor){
-            clone_class = "high_clonality"
-        } else{
-        } 
-    }
-    return(clone_class)
-}
-
-gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
-                                      low_ceiling = 20, high_floor = 20),
-                       "clone_class_EMRA")
-
-### Below is the plot where we assign clonality classes to all the cells no matter their sort identity
-PCAPlot(gd.data, group.by = "clone_class_all")
-
-### Then we can compare this with the same plot if we only assign clonality classes to the cells sorted CD27lo cells.
-PCAPlot(gd.data, group.by = "clone_class_EMRA")
-
-
-### So there are a couple in the naive sort that were at least detected in the iRepertoire data but really not many.
-### Now re-do the EMRA clone class so that it contains the two bins discussed above.
-gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
-                                      low_ceiling = 10, high_floor = 20), "clone_class_EMRA")
-PCAPlot(gd.data, group.by = "clone_class_EMRA")
-
-
-### UNSURE?!
-gd.data_Clonality <- gd.data
-Idents(gd.data_Clonality) <- "clone_class_EMRA"
-
-gd.data_Clonality[["data"]]
-
-gd.data_Clonality@assays$RNA@scale.data <- as.matrix(gd.data_Clonality@assays$RNA@scale.data)
-
-high_clonality_markers <- FindMarkers(gd.data_Clonality, ident.1 = "high_clonality", ident.2 = "no_class", min.pct = 0.25, only.pos = T)
-low_clonality_markers = FindMarkers(gd.data_Clonality, "low_clonality", "high_clonality", min.pct = 0.25, only.pos = T)
-
-write.table(high_clonality_markers, file = "./Output/high_clonality_markers.txt", sep = "\t", quote = F)
-write.table(low_clonality_markers, file = "./Output/low_clonality_markers.txt", sep = "\t", quote = F)
-
-### Is there anything interesting going on with the set of markers plotted above when we look at high vs low clonality cells?
-VlnPlot(gd.data_Clonality, 
-        c("PRF1",
-          "GZMA",
-          "CX3CR1",
-          "SELL",
-          "TCF7",
-          "LEF1",
-          "IL7R",
-          "LTB",
-          "GZMB"), ncol = 2)
-
-high_clonality_markers[c("PRF1", "GZMA", "GZMB", "CX3CR1", "TCF7"), ]
-
-### Granzyme B looks to be significantly up in the high-clonality cells but perforin and GZMA not so much. Also, TCF7 appears higher in the high-clonality cells - that's a bit strange because that's typically associated with the naive cells.
-### It's possible that these differences are actually due to a single large clone being different to the others. We should now look at differences between individual clones.
-#### I don't agree with this above... Seems to show the perfect story...
-clonotype_metadata <- read.table("./Data/clonotype_metadata.txt", row.names = 1)
-colnames(clonotype_metadata) = "clonotype"
-
-gd.data_Clonality <- AddMetaData(gd.data_Clonality, clonotype_metadata[rownames(gd.data_Clonality@meta.data),,drop = F], "clonotype")
-head(gd.data_Clonality@meta.data)
-
-### A clonotype of 'X' means that it was a unique cell.
-#### Need to get a palette of 14 colours
-
-# temp <- c(5,7,6,4,8)
-# barplot(temp, col = "#B53FE3") # test colours out
-
-clonalityColours <- c("A" = "#DB724F", "B" = "#B53FE3", "C" = "#DAD65F", "D" = "#DD59B8",
-                      "E" = "#D7CC97", "F" = "#78D9DC", "G" = "#D2A0DF", "H" = "#766ED9",
-                      "I" = "#6FE18E", "J" = "#A0E2BC", "K" = "#94EA4E", "L" = "#79A0C9",
-                      "M" = "#D38B99", "X" = "#999999")
-
-
-cols_for_sort <- c("VD1.CD27LO" = "#999999", "VD1.CD27HI" = "#009E73")
-
-pdf("./Figures/CellReportsRewrite/1F_Clonality.pdf")
-PCAPlot(gd.data_Clonality, group.by = "clonotype", cols = clonalityColours) +
-  theme(legend.title = element_blank(), legend.position = "top")
-dev.off()
+load("RData/ClonalityAnalyses.RData")
+# load("RData/SeuratAnalyses.RData")
+# 
+# 
+# 
+# 
+# clonality_values <- read.table("./Data/cell_clonality_from_iRep.csv", sep = ",", row.names = 1, header = T)
+# 
+# ### 10 in this table indicates that a sequence wasn't detected by TraCer.
+# ### A value of 0 shows that the sequence deteced by TraCeR wasn't in the iRepertoire data.
+# 
+# name_map <- read.csv("Data/name_map.txt", sep = "\t", row.names = 1)
+# rownames(name_map) = paste('X', rownames(name_map), sep = "")
+# name_map$sort_class <- ifelse((name_map$sort_class == "naive"), "VD1.CD27HI", "VD1.CD27LO")
+# name_map <- name_map[rownames(name_map) %in% rownames(gd.data[[]]), ]
+# name_map <- setNames(as.character(name_map$sort_class), rownames(name_map))
+# gd.data <- AddMetaData(object = gd.data, metadata = name_map, col.name = "sort_class")
+# 
+# 
+# gd.data@meta.data <- merge(gd.data@meta.data, clonality_values, by = 0) %>% column_to_rownames(., var = "Row.names")
+# 
+# FeaturePlot(gd.data, c("D_clonality", "G_clonality", "max_clonality", "mean_clonality"), reduction = "pca")
+# 
+# ### So this demonstrates that high clonality (as measured by iRepertoire) is only found in the EMRA-like population.
+# ### For any comparisons involving expanded and non-expanded cells, we must only consider cells that are in the EMRA population to start with.
+# ### Otherwise, any differences will be swamped by the EMRA vs naive differences which aren't interesting here.
+# ### Can we divide cells into bins depending on their clonality values and then compare markers between these bins?
+# 
+# 
+# 
+# EMRA_clonality <- gd.data@meta.data[gd.data@meta.data$sort_class == "VD1.CD27LO", ]
+# 
+# head(EMRA_clonality)
+# hist(EMRA_clonality$D_clonality)
+# hist(EMRA_clonality$G_clonality)
+# hist(EMRA_clonality$max_clonality)
+# hist(EMRA_clonality$mean_clonality)
+# 
+# ### Let's divide the cells into two classes using max_clonality
+# ### Low clonality (0-10%)
+# ### High clonality (>20%)
+# ### and see if we can identify discriminating markers between these populations.
+# ### Ideally, this would be relatively robust to changes in these boundaries.
+# ### We'll make a function to classify the cells and use this to annotate them for markers etc.
+# ### The function will be applied to every row in the metadata table.
+# ### First show if there are any cells at all in the naive sort class that were detected in the iRepertoire data.
+# 
+# classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
+#     max_clonality = as.numeric(x["max_clonality"])
+#     sort_class = x["sort_class"]
+#     clone_class = "no_class"
+#     #if (max_clonality>0 && sort_class == "EMRA") {
+#     if (max_clonality>0) {
+#         if (max_clonality < low_ceiling){
+#             clone_class = "low_clonality"
+#         } else if (max_clonality>high_floor){
+#             clone_class = "high_clonality"
+#         } else{
+#         }
+#     }
+#     return(clone_class)
+# }
+# 
+# apply(gd.data@meta.data, 1,
+#       classify_clonality,
+#       low_ceiling = 20,
+#       high_floor = 20)
+# 
+# gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+#                                       low_ceiling = 20, high_floor = 20), "clone_class_all")
+# 
+# ### Then do again for just the EMRA cells
+# classify_clonality <- function(x, low_ceiling = 10, high_floor = 20){
+#     max_clonality = as.numeric(x["max_clonality"])
+#     sort_class = x["sort_class"]
+#     clone_class = "no_class"
+#     if (max_clonality>0 && sort_class == "VD1.CD27LO") {
+#         if (max_clonality < low_ceiling){
+#             clone_class = "low_clonality"
+#         } else if (max_clonality>high_floor){
+#             clone_class = "high_clonality"
+#         } else{
+#         }
+#     }
+#     return(clone_class)
+# }
+# 
+# gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+#                                       low_ceiling = 20, high_floor = 20),
+#                        "clone_class_EMRA")
+# 
+# ### Below is the plot where we assign clonality classes to all the cells no matter their sort identity
+# PCAPlot(gd.data, group.by = "clone_class_all")
+# 
+# ### Then we can compare this with the same plot if we only assign clonality classes to the cells sorted CD27lo cells.
+# PCAPlot(gd.data, group.by = "clone_class_EMRA")
+# 
+# 
+# ### So there are a couple in the naive sort that were at least detected in the iRepertoire data but really not many.
+# ### Now re-do the EMRA clone class so that it contains the two bins discussed above.
+# gd.data <- AddMetaData(gd.data, apply(gd.data@meta.data, 1, classify_clonality,
+#                                       low_ceiling = 10, high_floor = 20), "clone_class_EMRA")
+# PCAPlot(gd.data, group.by = "clone_class_EMRA")
+# 
+# 
+# ### UNSURE?!
+# gd.data_Clonality <- gd.data
+# Idents(gd.data_Clonality) <- "clone_class_EMRA"
+# 
+# gd.data_Clonality@assays$RNA@scale.data <- as.matrix(gd.data_Clonality@assays$RNA@scale.data)
+# 
+# high_clonality_markers <- FindMarkers(gd.data_Clonality, ident.1 = "high_clonality", ident.2 = "no_class", min.pct = 0.25, only.pos = T)
+# low_clonality_markers = FindMarkers(gd.data_Clonality, "low_clonality", "high_clonality", min.pct = 0.25, only.pos = T)
+# 
+# write.table(high_clonality_markers, file = "./Output/high_clonality_markers.txt", sep = "\t", quote = F)
+# write.table(low_clonality_markers, file = "./Output/low_clonality_markers.txt", sep = "\t", quote = F)
+# 
+# ### Is there anything interesting going on with the set of markers plotted above when we look at high vs low clonality cells?
+# VlnPlot(gd.data_Clonality,
+#         c("PRF1",
+#           "GZMA",
+#           "CX3CR1",
+#           "SELL",
+#           "TCF7",
+#           "LEF1",
+#           "IL7R",
+#           "LTB",
+#           "GZMB"), ncol = 2)
+# 
+# high_clonality_markers[c("PRF1", "GZMA", "GZMB", "CX3CR1", "TCF7"), ]
+# 
+# ### Granzyme B looks to be significantly up in the high-clonality cells but perforin and GZMA not so much. Also, TCF7 appears higher in the high-clonality cells - that's a bit strange because that's typically associated with the naive cells.
+# ### It's possible that these differences are actually due to a single large clone being different to the others. We should now look at differences between individual clones.
+# #### I don't agree with this above... Seems to show the perfect story...
+# clonotype_metadata <- read.table("./Data/clonotype_metadata.txt", row.names = 1)
+# colnames(clonotype_metadata) = "clonotype"
+# 
+# gd.data_Clonality <- AddMetaData(gd.data_Clonality, clonotype_metadata[rownames(gd.data_Clonality@meta.data),,drop = F], "clonotype")
+# head(gd.data_Clonality@meta.data)
+# 
+# ### A clonotype of 'X' means that it was a unique cell.
+# #### Need to get a palette of 14 colours
+# 
+# # temp <- c(5,7,6,4,8)
+# # barplot(temp, col = "#B53FE3") # test colours out
+# 
+# clonalityColours <- c("A" = "#DB724F", "B" = "#B53FE3", "C" = "#DAD65F", "D" = "#DD59B8",
+#                       "E" = "#D7CC97", "F" = "#78D9DC", "G" = "#D2A0DF", "H" = "#766ED9",
+#                       "I" = "#6FE18E", "J" = "#A0E2BC", "K" = "#94EA4E", "L" = "#79A0C9",
+#                       "M" = "#D38B99", "X" = "#999999")
+# 
+# 
+# cols_for_sort <- c("VD1.CD27LO" = "#999999", "VD1.CD27HI" = "#009E73")
+# 
+# pdf("./Figures/CellReportsRewrite/1F_Clonality.pdf")
+# PCAPlot(gd.data_Clonality, group.by = "clonotype", cols = clonalityColours) +
+#   theme(legend.title = element_blank(), legend.position = "top")
+# dev.off()
 
 # Is it statistically significant that EMRA-like cells have more cells in an expanded clone than not?
 metaClonal <- gd.data_Clonality@meta.data
+library(reshape2)
 
-head(metaClonal)
+# Want to test if X matches with CD27HI exlcusively
+metaClonal$expand <- ifelse((metaClonal$clonotype == "X"), "singlet", "expanded")
+sorted <- metaClonal[, c("sort_class", "expand")]
+continSort <- dcast(sorted, sort_class ~ expand) %>% column_to_rownames(., var  = "sort_class")
 
-eff <- droplevels(subset(metaClonal, sort_class == "VD1.CD27LO"))
-eff$expanded <- ifelse((eff$clonotype != "X"), "ExpandedPopulation", "Singlet")
-neededEff <- eff %>% dcast(orig.ident ~ expanded)
+chisq_S <- chisq.test(continSort)
 
+clustered <- metaClonal[, c("ident", "expand")]
+continClust <- dcast(clustered, ident ~ expand) %>% column_to_rownames(., var  = "ident")
+chisq_C <- chisq.test(continClust)
 
-try <- gather(neededEff, key = "param", value = "number", -orig.ident)
-
-library(ggpubr)
-my_comparisons <- list(c("ExpandedPopulation", "Singlet"))
-ggplot(try, aes(x = param, y = number)) +
-  geom_boxplot(alpha = 0.5, width = 0.2) + 
-  geom_violin(aes(param, fill = param),
-              scale = "width", alpha = 0.8) +
-  theme_bw() +
-  theme(axis.text = element_text(size = 16)) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(legend.direction = "horizontal", legend.position = "top") + 
-  stat_compare_means(comparisons = my_comparisons,
-                     label = "p.signif", method = "wilcox.test")
 
 
 
