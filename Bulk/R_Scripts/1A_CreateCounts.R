@@ -1,5 +1,9 @@
+# A script to create counts from GrCh38 aligned bulk RNASequencing data from GammaDelta and CD8 populations
+## Author: Jack McMurray
+set.seed(2021) # Year of reanalysis
+
 ## Packages
-required <- c("tidyverse", "ggpubr", "ggbiplot", "devtools", "gplots", "UsefulFunctions")
+required <- c("tidyverse", "ggpubr", "devtools", "gplots", "UsefulFunctions")
 for (lib in required)
 {
   if (!require(lib, character.only = T))
@@ -8,6 +12,7 @@ for (lib in required)
     suppressMessages(library(lib, character.only = T, quietly = T))
   }
 }
+
 
 # Comparisons and Colours
 my_comparisons <- list(c("VD1.CD27HI", "VD1.CD27LO"), c("VD1.CD27HI", "CD8.EMRA"), c("VD1.CD27HI", "CD8.Naive"), c("VD1.CD27HI", "VD2"),
@@ -25,15 +30,17 @@ library(Rsubread)
 
 # Run after having run the terminal protocol
 # bam.files <- get_sorbam("/Volumes/ResearchData/Willcox Group/Jack/GD_RNA_Comb/BAM/")
-bam.files <- list.files("/Volumes/ResearchData/Willcox Group/Jack/GD_RNA_Comb/BAM/", pattern = ".bam$", full.names = T)
+bam.files <- list.files("/Volumes/noyvertb-cruk-bioinformatics/JackMcMurray/GD_RNASeq/bam_38/", pattern = ".bam$", full.names = T)
 
 ## Summary of the proportion of reads that are mapped
-# props <- propmapped(files = bam.files)
+props <- propmapped(files = bam.files)
 # props
 
 ## Counting
 ### Contains inbuilt annotation for hg19 genome assembly
-fc <- featureCounts(bam.files, annot.inbuilt = "hg19")
+fc <- featureCounts(bam.files, annot.inbuilt = "hg38",)
+
+?featureCounts
 Counts <- as.data.frame(fc$counts)
 
 # Gain genelengths
