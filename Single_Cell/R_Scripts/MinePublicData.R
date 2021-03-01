@@ -1,10 +1,14 @@
+# A script to investigate the single-cell RNA sequencing data from Gutierrez study
+# Author: Jack McMurray
+set.seed(2021) # Year of analysis
+
+# Load up packages and make common variables
 library(Seurat)
 library(tidyverse)
 
+# Read in data
 load("./Single_Cell/Output/Projections/Nature_Comms_Stuff.RData")
-
 pbmc.data <- read.delim("./Single_Cell/Data/Nature_Comms/GSE124731_single_cell_rnaseq_gene_counts.txt")
-
 meta <- read.delim("./Single_Cell/Data/Nature_Comms/GSE124731_single_cell_rnaseq_meta_data.txt")
 Vd1_meta <- droplevels(subset(meta, cell.type == "Vd1"))
 
@@ -15,11 +19,14 @@ Vd1_meta <- droplevels(subset(meta, cell.type == "Vd1"))
 # NK_meta <- droplevels(subset(meta, cell.type == "NK"))
 
 pbmc.data <- column_to_rownames(pbmc.data, var = "Gene")
-VD1_cells <- pbmc.data[, colnames(pbmc.data) %in% levels(Vd1_meta$cell_id)]
+VD1_cells <- pbmc.data[, colnames(pbmc.data) %in% Vd1_meta$cell_id]
+
 
 library(GenomicFeatures)
-hg19.ens <- makeTxDbFromUCSC(genome = "hg19", tablename = "ensGene")
-exonic <- exonsBy(hg19.ens, by = "gene")
+# rtracklayer::ucscGenomes()[ , "db"]
+# install.packages("RMariaDB")
+hg38.ens <- makeTxDbFromUCSC(genome = "hg38", tablename = "knownGene")
+exonic <- exonsBy(hg38.ens, by = "gene")
 red.exonic <- reduce(exonic)
 exon.lengths <- sum(width(red.exonic))
 exon.lengths <- exon.lengths %>% as.data.frame() %>% rownames_to_column(., var = "Gene")
@@ -27,12 +34,16 @@ colnames(exon.lengths) <- c("Gene", "Length")
 
 # Need to merge in the lengths of the genes...
 VD1_cells <- VD1_cells %>% rownames_to_column(., var = "Gene")
+
+head(VD1_cells)
+
+
 VD1_cells_bind <- merge(VD1_cells, exon.lengths, by = "Gene") %>% column_to_rownames(., var = "Gene")
 VD1_tpms <- VD1_cells_bind[!'%in%'(colnames(VD1_cells_bind), c("Length"))] / VD1_cells_bind$Length
 
 library(biomaRt)
 mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
-genes <- row.names(VD1_tpms)
+genes <- head(VD1_tpms)
 G_list1 <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id", "external_gene_name"),
                 values = genes, mart = mart)
 VD1_tpms <- VD1_tpms[row.names(G_list1), ]
