@@ -3,16 +3,7 @@
 set.seed(2021) # Year of reanalysis
 
 ## Packages
-required <- c("tidyverse", "ggpubr", "devtools", "gplots", "UsefulFunctions")
-for (lib in required)
-{
-  if (!require(lib, character.only = T))
-  {
-    install.packages(lib)
-    suppressMessages(library(lib, character.only = T, quietly = T))
-  }
-}
-
+library(tidyverse)
 
 # Comparisons and Colours
 my_comparisons <- list(c("VD1.CD27HI", "VD1.CD27LO"), c("VD1.CD27HI", "CD8.EMRA"), c("VD1.CD27HI", "CD8.Naive"), c("VD1.CD27HI", "VD2"),
@@ -24,13 +15,12 @@ cbcols <- c("VD1.CD27LO" = "#999999", "CD8.EMRA" = "#56B4E9",
             "CD8.Naive" = "#E69F00", "VD1.CD27HI" = "#009E73",
             "VD2" = "#CC79A7")
 
-# source("https://bioconductor.org/biocLite.R")
-# biocLite("Rsubread", dependencies = T)
+# BiocManager::install("Rsubread", dependencies = T)
 library(Rsubread)
 
 # Run after having run the terminal protocol
 # bam.files <- get_sorbam("/Volumes/ResearchData/Willcox Group/Jack/GD_RNA_Comb/BAM/")
-bam.files <- list.files("/Volumes/noyvertb-cruk-bioinformatics/JackMcMurray/GD_RNASeq/bam_38/", pattern = ".bam$", full.names = T)
+bam.files <- list.files("/Volumes/noyvertb-cruk-bioinformatics/JackMcMurray/GD_RNASeq/bam_38", pattern = ".bam$", full.names = T)
 
 ## Summary of the proportion of reads that are mapped
 props <- propmapped(files = bam.files)
@@ -38,9 +28,7 @@ props <- propmapped(files = bam.files)
 
 ## Counting
 ### Contains inbuilt annotation for hg19 genome assembly
-fc <- featureCounts(bam.files, annot.inbuilt = "hg38",)
-
-?featureCounts
+fc <- featureCounts(bam.files, annot.inbuilt = "hg38", isPairedEnd = T)
 Counts <- as.data.frame(fc$counts)
 
 # Gain genelengths
@@ -53,29 +41,7 @@ ann$GeneID <- as.factor(ann$GeneID)
 
 Counts2 <- droplevels(merge(Counts1, ann, by = "GeneID"))
 
-# Gather the Pats
-Counts3 <- Counts2 %>% gather(contains("X."), key = "ID", value = "Count")
-Counts3$ID <- as.factor(Counts3$ID)
+Counts2$Length <- NULL
 
-head(Counts3)
+write.table("./Bulk/Counts/Counts_GD.txt", x = Counts2, row.names = F, quote = F, sep = "\t")
 
-# loop to make individual dataframes in a list
-listofsamp <- list()
-
-c <- 1
-for(i in levels(Counts3$ID)){
-  print(i)
-  work <- droplevels(subset(Counts3, ID == i))
-  listofsamp[[i]] <- work
-  c <- c + 1
-}
-
-# Get rid of "ID" in the list
-LoS <- lapply(listofsamp, function(x) x[!(names(x) %in% c("ID"))])
-
-# write Csvs for each member of the list
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts")
-for(i in names(LoS)){
-  write.table(LoS[[i]], paste0(i,".txt"), sep = "\t", row.names = F)
-}
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk")
