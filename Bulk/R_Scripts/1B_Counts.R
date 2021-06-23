@@ -27,49 +27,36 @@ library(Rsubread)
 # source("CreateCounts.R") 
 
 # use edgeR  START!
-# source("https://bioconductor.org/biocLite.R")
-# biocLite("edgeR", dependencies = T)
+# BiocManager::install("edgeR", dependencies = T)
 library(edgeR)
-files <- list.files(path = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts", pattern = ".txt$")
-setwd("/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/Counts")
+y <- read.delim("./Bulk/Counts/Counts_GD.txt", check.names = F) %>% column_to_rownames(., var = "GeneID") %>% as.matrix
 
 # Replenish "x"
-x <- readDGE(files, columns = c(1,3))
-samplenames <- substring(colnames(x), length(files), nchar(colnames(x)))
-colnames(x) <- samplenames
+x <- DGEList(counts = y)
 
 # Need to label based on cell type and lane
 ## Cell types
-group <- ifelse(grepl("VD1.CD27LO", colnames(x)) | grepl("VD1[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]CD27LO", colnames(x)), "VD1.CD27LO",
-                          ifelse(grepl("CD8.EMRA", colnames(x)) | grepl("CD8[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{4}[[:punct:]]{1}EMRA", colnames(x)), "CD8.EMRA",
-                                 ifelse(grepl("CD8.Naive", colnames(x)) | grepl("CD8[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]Naive", colnames(x)), "CD8.Naive",
-                                        ifelse(grepl("VD1.CD27HI", colnames(x)) | grepl("VD1[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]CD2HI", colnames(x)), "VD1.CD27HI",
-                                               ifelse(grepl("VD2", colnames(x)), "VD2", "none")))))
+colnames(x) # BP28-VD1 is CD27LO
+# group <- ifelse(grepl("VD1.CD27LO", colnames(x), ignore.case = T) | grepl("VD1[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]CD27LO", colnames(x), ignore.case = T), "VD1.CD27LO",
+#                           ifelse(grepl("CD8.EMRA", colnames(x), ignore.case = T) | grepl("CD8[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{4}[[:punct:]]{1}EMRA", colnames(x), ignore.case = T), "CD8.EMRA",
+#                                  ifelse(grepl("CD8.Naive", colnames(x), ignore.case = T) | grepl("CD8[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]Naive", colnames(x), ignore.case = T), "CD8.Naive",
+#                                         ifelse(grepl("VD1.CD27HI", colnames(x), ignore.case = T) | grepl("VD1[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]{1}[[:digit:]]{2}[[:punct:]]CD2HI", colnames(x), ignore.case = T), "VD1.CD27HI",
+#                                                ifelse(grepl("VD2", colnames(x), ignore.case = T), "VD2", "none")))))
+
+colnames(x) <- gsub("3_BP28Vd1.bam", "3_BP28Vd1CD27LO.bam", colnames(x))
+
+group <- ifelse(grepl("CD27LO", colnames(x), ignore.case = T), "VD1.CD27LO",
+                          ifelse(grepl("EMRA", colnames(x), ignore.case = T) , "CD8.EMRA",
+                                 ifelse(grepl("Naive", colnames(x), ignore.case = T), "CD8.Naive",
+                                        ifelse(grepl("CD27HI", colnames(x), ignore.case = T), "VD1.CD27HI",
+                                               ifelse(grepl("VD2", colnames(x), ignore.case = T), "VD2", "none")))))
+
 x$samples$group <- as.factor(group)
-
-## Lane
-# lane <- ifelse(grepl("L001", colnames(x)), "L001",
-#                           ifelse(grepl("L002", colnames(x)), "L002",
-#                                  ifelse(grepl("L003", colnames(x)), "L003",
-#                                         ifelse(grepl("L004", colnames(x)), "L004", "none"))))
-# x$samples$lane <- as.factor(lane)
-
-# Rename columns - annoying
-
-# colnames(x) <- c("28MD.VD1.CD27LO.L001", "28MD.VD1.CD27LO.L002", "28MD.VD1.CD27LO.L003", "28MD.VD1.CD27LO.L004",
-#                  "28MD.CD8.EMRA.L001", "28MD.CD8.EMRA.L002","28MD.CD8.EMRA.L003", "28MD.CD8.EMRA.L004",
-#                  "28MD.CD8.Naive.L001", "28MD.CD8.Naive.L002", "28MD.CD8.Naive.L003", "28MD.CD8.Naive.L004",
-#                  "28MD.VD1.CD27HI.L001", "28MD.VD1.CD27HI.L002", "28MD.VD1.CD27HI.L003", "28MD.VD1.CD27HI.L004",
-#                  "28MD.VD2.L001", "28MD.VD2.L002", "28MD.VD2.L003", "28MD.VD2.L004",
-#                  "31EN.CD8.Naive.L001", "31EN.CD8.Naive.L002", "31EN.CD8.Naive.L003", "31EN.CD8.Naive.L004",
-#                  "31EN.CD8.EMRA.L001", "31EN.CD8.EMRA.L002", "31EN.CD8.EMRA.L003", "31EN.CD8.EMRA.L004",
-#                  "31EN.VD1.CD27LO.L001", "31EN.VD1.CD27LO.L002", "31EN.VD1.CD27LO.L003", "31EN.VD1.CD27LO.L004",
-#                  "31EN.VD1.CD27HI.L001", "31EN.VD1.CD27HI.L002", "31EN.VD1.CD27HI.L003", "31EN.VD1.CD27HI.L004",
-#                  "31EN.VD2.L001", "31EN.VD2.L002", "31EN.VD2.L003", "31EN.VD2.L004")
-
-colnames(x) <- c("28MD.CD8.EMRA", "28MD.CD8.Naive", "28MD.VD1.CD27HI", "28MD.VD1.CD27LO", "28MD.VD2",
-                "31EN.CD8.EMRA", "31EN.CD8.Naive", "31EN.VD1.CD27HI", "31EN.VD1.CD27LO", "31EN.VD2")
-
+colnames(x) <- c("BP19.CD8.EMRA", "BP26.VD1.CD27LO", "BP29.VD1.CD27LO", "CD22.CD8.EMRA", "BP29.CD8.Naive", "BP29.CD8.EMRA",
+                 "BP27.CD8.Naive", "BP27.CD8.EMRA", "BP27.VD1.CD27HI", "BP17.VD1.CD27LO", "BP19.CD8.Naive", "BP26.CD8.EMRA",
+                 "28MD.CD8.EMRA", "28MD.CD8.Naive", "28MD.VD1.CD27HI", "28MD.VD1.CD27LO", "28MD.VD2", "BP24.CD8.Naive", "BP28.VD1.CD27LO",
+                 "BP9.VD1.CD27HI", "31EN.CD8.EMRA", "31EN.CD8.Naive", "31EN.VD1.CD27HI", "31EN.VD1.CD27LO", "31EN.VD2", "BP24.CD8.EMRA",
+                 "BP29.VD1.CD27HI", "BP28.CD8.Naive", "BP28.CD8.EMRA", "BP22.CD8.Naive")
 samplenames <- colnames(x)
 
 # Gaining second dataframe (Symbols)
@@ -88,29 +75,35 @@ lcpm <- cpm(x, log = T)
 
 # Remove lowly expressed transcripts
 dim(x)
-table(rowSums(x$counts==0)==10) # Show me the amount of transcripts that are zero for all 40 samples
+
+unique(samplenames) %>% length()
+table(rowSums(x$counts==0)==30) # 5,377 genes are zero in all 30 samples
+
+
 CPM_scaling <- min(x$samples$lib.size)/1000000
 cpm_scale <- 6.5/CPM_scaling
 
 y <- x
 
+
+
 keep.exprs <- rowSums(cpm>cpm_scale)>=2 # Genes must have a cpm above 0.44 (count of 6.5 in lowest library) and be expressed in at least 2 groups (1 population)
 x <- x[keep.exprs,, keep.lib.sizes = F]
-dim(x)
+dim(x) # 12,616 kept
 
 
 # What genes have I lost
 pre <- y@.Data[3] %>% as.data.frame()
 post <- x@.Data[3] %>% as.data.frame()
 
-filtered_genes <- pre[!('%in%'(pre$ENTREZID, post$ENTREZID)), ] %>% droplevels()
+filtered_genes <- pre[!('%in%'(pre$ENTREZID, post$ENTREZID)), ] %>% droplevels() # 15,779 filtered
 
 
 # ## Showing the removal of the lowly expressed transcripts
 # library(RColorBrewer)
 # nsamples <- ncol(x)
-# col <- brewer.pal(nsamples, "Paired")
-# # pdf("../Figures/Proof/lowly_expressed.pdf")
+# col <- brewer.pal(nsamples)
+# pdf("./Bulk/Figures/Proof/lowly_expressed_transcripts.pdf")
 # par(mfrow = c(1,2))
 # plot(density(lcpm[,1]), col = col[1], lwd = 2, ylim = c(0,0.4), las = 2,
 #      main = "", xlab = "")
@@ -138,7 +131,7 @@ x <- calcNormFactors(x, method = "TMM")
 x$samples$norm.factors
 x <- estimateCommonDisp(x)
 x <- estimateTagwiseDisp(x)
-# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/x.RData")
+# save(x, file = "/Users/JackMcMurray/OneDrive/UoB/PhD/Projects/GammaDelta/Bulk/NormalisationData.RData")
 
 # ## Showing theoretical effect of normalisation
 # x2 <- x
@@ -189,7 +182,9 @@ lcpm <- cpm(x, log = T)
 # data.frame(x$samples$group, col.cell)
 # pdf("../Figures/Proof/PCA_of_all_genes.pdf")
 col.cell <- c("#999999","#56B4E9","#E69F00","#009E73","#CC79A7")[x$samples$group]
-plotMDS(lcpm, pch = 16, cex = 2, col = col.cell, top = 14191)
+?plotMDS
+
+plotMDS(lcpm, pch = 16, cex = 2, col = col.cell, top = 12616, labels = colnames(x))
 legend("top",
        fill = c("#999999", "#56B4E9",
                 "#E69F00", "#009E73",
